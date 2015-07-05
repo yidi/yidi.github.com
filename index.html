@@ -208,10 +208,11 @@
         
           <p>我们在编写程序的过程中，离不开测试，测试又分为单元测试和集成测试。集成测试有著名的Jenkins平台，测试人员可以很方便的在上面部署集成测试任务进行测试.地址：<a href="http://jenkins-ci.org/" title="Jenkins" target="_blank" rel="external">http://jenkins-ci.org/</a> 但是在开发和单元测试阶段，我们更关注单元测试，相信不少人也正在用很多测试框架，例如：<a href="http://junit.org/" title="Junit" target="_blank" rel="external">Junit</a>,<a href="http://testng.org/doc/index.html" title="TestNG" target="_blank" rel="external">TestNG</a> 等JVM平台的单元测试框架。这些都是非常流行好用的测试工具。</p>
 <h2 id="Mock介绍">Mock介绍</h2><p>实际工作中我们可能会遇到类似下面的情况：</p>
-<p>我们写了一个函数，函数需要调用其他模块或者服务获取结果，然后我们的函数对获取到的结果进行处理并返回处理后的结果。这里的服务可能是远程服务调用也可能是数据库服务调用，那么我们如果要多这个函数进行单元测试就一定需要保证远程服务调用当前或者当前数据库服务可用么？</p>
+<p>我们写了一个函数，函数需要调用其他模块或者服务获取结果，然后我们的函数对获取到的结果进行处理并返回处理后的结果。这里的服务可能是远程服务调用也可能是数据库服务调用，那么我们如果要对这个函数进行单元测试就一定需要保证远程服务调用当前或者当前数据库服务可用么？</p>
 <p>答案是：不用。</p>
-<p>一方面为了进行一个简单的单元测试就要调用服务显然太浪费，在资源使用上也不合理，另一方面远程服务或者数据库服务可能也正在开发或者还没有开始开发，我们也不能因此就不进行单元测试。这种情况正式Mock发挥威力的时候。</p>
+<p>一方面为了进行一个简单的单元测试就要调用服务显然太浪费，在资源使用上也不合理，另一方面远程服务或者数据库服务可能也正在开发或者还没有开始开发，我们也不能因此就不进行单元测试。这种情况正是Mock发挥威力的时候。</p>
 <p>Mock简单来说就是为我们模拟单元测试中需要使用到的其他资源并提供资源对应的服务而简化单元测试工作，使单元测试与其依赖的服务解耦。</p>
+<p>下面我们写一个具体的例子，我们使用的Mock工具为Mockito，我们模拟的单元测试需要的服务是一个数据库服务。</p>
 <h2 id="Maven依赖">Maven依赖</h2><p>假设使用版本是1.8.5，则在Maven项目中POM.xml配置依赖：</p>
 <pre><code><span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
      <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.mockito<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
@@ -219,8 +220,7 @@
     <span class="tag">&lt;<span class="title">version</span>&gt;</span>1.8.5<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
     <span class="tag">&lt;<span class="title">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="title">scope</span>&gt;</span>
 <span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
-</code></pre><h2 id="Mock使用示例">Mock使用示例</h2><p>下面我们写一个具体的例子，我们使用的Mock工具为Mockito，地址为：<a href="http://mockito.org/" title="Mockito" target="_blank" rel="external">http://mockito.org/</a>,我们模拟的单元测试需要的服务是一个数据库服务。</p>
-<p>我们写了一个DBController类，其主要任务是调用数据库服务，或者当前用户的信息并返回是否成功，代码如下：</p>
+</code></pre><h2 id="Mock使用示例">Mock使用示例</h2><p>我们写了一个DBController类，其主要任务是调用数据库服务，获取当前用户的信息并返回是否成功，代码如下：</p>
 <pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DBController</span> </span>{
     <span class="keyword">private</span> DBService dbService;
     <span class="function"><span class="keyword">public</span> <span class="title">DBController</span><span class="params">(DBService dbService)</span></span>{
@@ -239,7 +239,7 @@
 Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">()</span>)</span>.thenReturn<span class="params">(expectedUser)</span>;
 </code></pre><p>这两行代码表示当调用dbService.getUserInfoData()方法时就会返回我们声明的expectedUser对象。</p>
 <p>我们所需要的数据库服务已经完全用Mock模拟出来了，接下来就可以开始单元测试了，我们结合使用TestNG进行单元测试，代码如下：</p>
-<pre><code>public class DBControllerTest {
+<pre><code>   public class DBControllerTest {
     @Test
     public void testMethod_getUserInfoData<span class="params">()</span>{
         User expectedUser =new User<span class="params">(<span class="string">"User1"</span>)</span>;
@@ -248,7 +248,7 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
         <span class="comment">//模拟dbService.getUserInfoData()实现</span>
         Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">()</span>)</span>.thenReturn<span class="params">(expectedUser)</span>;
         DBController dbController = new DBController<span class="params">(dbService)</span>;
-        HashMap&lt;String,Useruser = new HashMap&lt;String,User&gt;<span class="params">()</span>;
+        HashMap&lt;String,User&gt; user = new HashMap&lt;String,User&gt;<span class="params">()</span>;
         boolean succ = dbController.getUserInfoData<span class="params">(user)</span>;
         <span class="comment">//验证是否成功返回</span>
         Assert.assertEquals<span class="params">(<span class="literal">true</span>, succ)</span>;
@@ -258,7 +258,7 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
         Mockito.verify<span class="params">(dbService)</span>.getUserInfoData<span class="params">()</span>;
     }
 }
-</code></pre><p>以上就是Mock的简单应用，在一般的单元测试场景这已经足够使用了，如果需要了解更多Mock使用，可以进一步在<a href="http://mockito.org/" title="Mockito" target="_blank" rel="external">http://mockito.org/</a>进行学习。</p>
+</code></pre><p>以上就是Mock的简单应用，一般的单元测试场景这已经足够使用了，如果需要了解更多Mock使用，可以进一步在<a href="http://mockito.org/" title="Mockito" target="_blank" rel="external">http://mockito.org/</a>进行学习。</p>
 
         
       
