@@ -24,7 +24,7 @@
 
 
 
-  <meta name="keywords" content="YIDI'S BLOG" />
+  <meta name="keywords" content="Java并发编程," />
 
 
 
@@ -47,7 +47,7 @@
 
 
 
-  <title> YIDI'S BLOG </title>
+  <title> Java并发编程（一） // YIDI'S BLOG </title>
 </head>
 
 <body>
@@ -61,9 +61,7 @@
   </div>
 <![endif]-->
 
-  <div class="container one-column 
-   page-home 
-">
+  <div class="container one-column page-post-detail">
     <div class="headband"></div>
 
     <div id="header" class="header">
@@ -147,9 +145,9 @@
       <div class="main-inner">
         <div id="content" class="content">
           
+
   <div id="posts" class="posts-expand">
     
-      
 
   <div class="post post-type-normal ">
     <div class="post-header">
@@ -160,9 +158,7 @@
           
           
             
-              <a class="post-title-link" href="/2015/07/05/Java并发编程（一）/">
-                Java并发编程（一）
-              </a>
+              Java并发编程（一）
             
           
         </h1>
@@ -205,8 +201,7 @@
       
 
       
-        
-          <p>Java中的并发就是指多线程编程，并发编程可以使我们将程序划分为多个分离的，独立运行的任务。每一个任务都由执行线程来驱动。线程用于驱动任务，因此需要一种描述任务的方式，在Java中由Runnable接口来提供。要想定义一个基于线程驱动的任务，只需要实现Runnable接口，并编写其run()方法，在其中实现你的任务需要实现的功能。<br>任务的run()方法通常来讲总是以某种形式的循环实现，这样这个任务就可以一直执行下去，直到满足一定的条件不再需要执行为止，这个满足一定条件就是跳出循环的条件。这里的Runnable 和run()方法不具备执行的能力，它必须显示的依附于一个线程上，因此叫做线程驱动任务。</p>
+        <p>Java中的并发就是指多线程编程，并发编程可以使我们将程序划分为多个分离的，独立运行的任务。每一个任务都由执行线程来驱动。线程用于驱动任务，因此需要一种描述任务的方式，在Java中由Runnable接口来提供。要想定义一个基于线程驱动的任务，只需要实现Runnable接口，并编写其run()方法，在其中实现你的任务需要实现的功能。<br>任务的run()方法通常来讲总是以某种形式的循环实现，这样这个任务就可以一直执行下去，直到满足一定的条件不再需要执行为止，这个满足一定条件就是跳出循环的条件。这里的Runnable 和run()方法不具备执行的能力，它必须显示的依附于一个线程上，因此叫做线程驱动任务。</p>
 <h2 id="1-Thread类">1.Thread类</h2><p>Thread类是Java并发最基础也是最核心的线程类，最基本的要让一个Runnable接口转变成一个可执行的任务就是将其提交给一个Thread对象，然后调用Thread对象的start()方法使其运行，此时线程就会自动驱动Runnable任务并执行其run()方法。</p>
 <pre><code><span class="keyword">Thread</span> t <span class="subst">=</span> <span class="literal">new</span> <span class="keyword">Thread</span>(<span class="literal">new</span> 一个Runnable对象)
 t<span class="built_in">.</span>start();
@@ -349,304 +344,54 @@ t<span class="built_in">.</span>start();
 }
 </code></pre><p>我们可以根据需要为我们的线程逐个设置异常处理器，但是如果我们知道在代码中需要处处使用相同的异常处理器，那么我们可以在Thread类中设置一个静态阈来设置所有线程的默认异常处理器。其用法为：Thread.setDefaultUncaughtExceptionHandler();系统调用异常处理器的优先顺序为：专用异常处理器，如果没有则调用线程组专用异常处理器，如果以上都没有最后才调用默认处理器。</p>
 
-        
       
     </div>
 
     <div class="post-footer">
       
-
+        <div class="post-tags">
+          
+            <a href="/tags/Java并发编程/"> #Java并发编程 </a>
+          
+        </div>
       
 
       
+        <div class="post-nav">
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/07/05/深入理解内部类（一）/">深入理解内部类(一)</a>
+            
+          </div>
+        </div>
       
-        <div class="post-eof"></div>
+
+      
       
     </div>
   </div>
 
 
+
+    <div class="post-spread">
+      
+    </div>
+
     
-      
-
-  <div class="post post-type-normal ">
-    <div class="post-header">
-
-      
-      
-        <h1 class="post-title">
-          
-          
-            
-              <a class="post-title-link" href="/2015/07/05/深入理解内部类（一）/">
-                深入理解内部类(一)
-              </a>
-            
-          
-        </h1>
-      
-
-      <div class="post-meta">
-        <span class="post-time">
-          发表于 2015-07-05
-        </span>
-
+      <div class="comments" id="comments">
         
-          <span class="post-category">
-            &nbsp; | &nbsp; 分类于
-            
-              <a href="/categories/CoreJava/">CoreJava</a>
-
-              
-              
-
-            
-          </span>
-        
-
-        
-          
-            <span class="post-comments-count">
-            &nbsp; | &nbsp;
-            <a href="/2015/07/05/深入理解内部类（一）/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/05/深入理解内部类（一）/"></span>
-            </a>
-          </span>
-          
+          <div class="ds-thread" data-thread-key="2015/07/05/Java并发编程（一）/"
+               data-title="Java并发编程（一）" data-url="http://yoursite.com/2015/07/05/Java并发编程（一）/">
+          </div>
         
       </div>
-    </div>
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <h2 id="内部类">内部类</h2><p>把一个类的定义放在另一个类的定义的内部，这种类就是内部类。通过内部类可以把逻辑相关的类组织在一起，通过这种代码隐藏方式，可以有效控制内部类的可见性，不仅如此，内部类了解外围类，并能与之通信。需要知道内部类与类组合是不同的概念。</p>
-<p>在外围类的非静态方法里使用内部类的时候，与使用普通类并没有什么不同。一般的比较典型的情况是在外部类中会有一个方法，该方法会返回一个指向内部类的引用。</p>
-<p>如果要在外部类的非静态方法之外的位置创建某个内部类对象，就必须要像在main()方法中那样，具体的指明这个对象类型：<strong>OuterClassName.InnerClassName。</strong></p>
-<h2 id="链接到外部类">链接到外部类</h2><p>内部类不仅仅是一种名字隐藏和组织代码的模式，这不是内部类最引人注目的用途。当生成一个内部类对象时，这个内部类对象就与制造它的外围对象之间有了一种联系，它能访问其外围对象的所有成员，而不需要任何特殊条件。另外：内部类还拥有其外围类的所有元素的访问权。我们通过Java编程思想一书中的一个例子说明这个特性。首先定义一个接口Selector：</p>
-<pre><code><span class="class"><span class="keyword">interface</span> <span class="title">Selector</span></span>{
-    <span class="function"><span class="keyword">boolean</span> <span class="title">end</span><span class="params">()</span></span>;
-    <span class="function">Object <span class="title">current</span><span class="params">()</span></span>;
-    <span class="function"><span class="keyword">void</span> <span class="title">next</span><span class="params">()</span></span>;
-}
-</code></pre><p>这个接口有end()、current()、next()三个方法。然后定义类Sequence，并定义其内部类SequenceSelector，让这个内部类实现Selector接口。</p>
-<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Sequence</span> </span>{
-    <span class="keyword">private</span> Object[] items;
-    <span class="keyword">private</span> <span class="keyword">int</span> next = <span class="number">0</span>;
-    <span class="function"><span class="keyword">public</span> <span class="title">Sequence</span><span class="params">(<span class="keyword">int</span> size)</span></span>{
-        items = <span class="keyword">new</span> Object[size];
-    }
-    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">(Object obj)</span></span>{
-        <span class="keyword">if</span>(next &lt; items.length){
-            items[next++] = obj;
-        }
-    }
-
-    <span class="function"><span class="keyword">public</span> Selector <span class="title">selector</span><span class="params">()</span></span>{
-        <span class="keyword">return</span> <span class="keyword">new</span> SequenceSelector();
-    }
-
-    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">SequenceSelector</span> <span class="keyword">implements</span> <span class="title">Selector</span></span>{
-        <span class="keyword">private</span> <span class="keyword">int</span> index = <span class="number">0</span>;
-        <span class="annotation">@Override</span>
-        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">end</span><span class="params">()</span> </span>{
-            <span class="keyword">return</span> index == items.length;
-        }
-        <span class="annotation">@Override</span>
-        <span class="function"><span class="keyword">public</span> Object <span class="title">current</span><span class="params">()</span> </span>{
-            <span class="keyword">return</span> items[index];
-        }
-        <span class="annotation">@Override</span>
-        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">next</span><span class="params">()</span> </span>{
-            <span class="keyword">if</span>(index &lt; items.length){
-                index++;
-            }
-        }
-    }
-    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>{
-        Sequence seq = <span class="keyword">new</span> Sequence(<span class="number">10</span>);
-        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>;i &lt; <span class="number">10</span>;i++){
-            seq.add(Integer.toString(i));
-        }
-        Selector selector = seq.selector();
-        <span class="keyword">while</span>(!selector.end()){
-            System.out.print(selector.current()+<span class="string">" "</span>);
-            selector.next();
-        }
-    }
-}
-</code></pre><p>这是“迭代器”设计模式的一个简单应用，SequenceSelector是提供selector功能的内部private类。<br>这里内部类中的end()、current()、next()方法都用到了外部类的items对象，而且还是外部类的private对象。可见内部类可以访问外部类的所有成员，这为我们编写迭代过程代码提供了极大的方便（编写其他基于内部类与外部类通信的程序也一样）。内部类之所以拥有这样的访问权限其实是在内部类对象被外部类对象被创建的时候，内部类对象会自动捕获一个指向外部类对象的一个引用。在内部类中看上去直接可以访问外部类成员，其实就是这个自动捕获的引用在访问外部类成员。而捕获这个引用的过程是不需要程序员去关心的。</p>
-<h2 id="-this与-new">.this与.new</h2><p>如果要在内部类中获取外部类对象的引用，可以使用外部类名字后跟<code>.this</code>.这样产生的引用自动具有正确的类型，这在编译期就可以知晓并受到检查，因此没有任何运行时开销。</p>
-<pre><code><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">OuterClass</span> {
-    <span class="keyword">private</span> <span class="keyword">class</span> <span class="title">InnerClass</span>{
-        <span class="function"><span class="keyword">public</span> OuterClass <span class="title">getOuter</span>(<span class="params"></span>)</span>{
-            <span class="keyword">return</span> OuterClass.<span class="keyword">this</span>;
-        }
-    }
-    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span>(<span class="params">String[] args</span>)</span>{
-        OuterClass <span class="keyword">out</span> = <span class="keyword">new</span> OuterClass();
-        OuterClass.InnerClass inner = <span class="keyword">out</span>.new InnerClass();
-        System.<span class="keyword">out</span>.println(<span class="keyword">out</span> == inner.getOuter());
-    }
-}
-</code></pre><p>可以看到以上代码输出的结果为true；</p>
-<p>拥有外部类对象之前是不可能创建内部类的，这是因为内部类对象会自动暗中连接到创建它的外部类对象上。所以我们在main()方法中要创建内部类时必须使用外部类对象去创建内部类，这就是<code>.new</code>语法，例如如下代码方式：</p>
-<pre><code>OuterClass <span class="keyword">out</span> = <span class="keyword">new</span> OuterClass();
-OuterClass.InnerClass inner = <span class="keyword">out</span>.<span class="keyword">new</span> InnerClass();
-</code></pre>
-        
-      
-    </div>
-
-    <div class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </div>
-  </div>
-
-
-    
-      
-
-  <div class="post post-type-normal ">
-    <div class="post-header">
-
-      
-      
-        <h1 class="post-title">
-          
-          
-            
-              <a class="post-title-link" href="/2015/07/04/单元测试工具-MOCK/">
-                单元测试工具-MOCK
-              </a>
-            
-          
-        </h1>
-      
-
-      <div class="post-meta">
-        <span class="post-time">
-          发表于 2015-07-04
-        </span>
-
-        
-          <span class="post-category">
-            &nbsp; | &nbsp; 分类于
-            
-              <a href="/categories/UnitTest/">UnitTest</a>
-
-              
-              
-
-            
-          </span>
-        
-
-        
-          
-            <span class="post-comments-count">
-            &nbsp; | &nbsp;
-            <a href="/2015/07/04/单元测试工具-MOCK/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/04/单元测试工具-MOCK/"></span>
-            </a>
-          </span>
-          
-        
-      </div>
-    </div>
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <p>我们在编写程序的过程中，离不开测试，测试又分为单元测试和集成测试。集成测试有著名的Jenkins平台，测试人员可以很方便的在上面部署集成测试任务进行测试.地址：<a href="http://jenkins-ci.org/" title="Jenkins" target="_blank" rel="external">http://jenkins-ci.org/</a> 但是在开发和单元测试阶段，我们更关注单元测试，相信不少人也正在用很多测试框架，例如：<a href="http://junit.org/" title="Junit" target="_blank" rel="external">Junit</a>,<a href="http://testng.org/doc/index.html" title="TestNG" target="_blank" rel="external">TestNG</a> 等JVM平台的单元测试框架。这些都是非常流行好用的测试工具。</p>
-<h2 id="Mock介绍">Mock介绍</h2><p>实际工作中我们可能会遇到类似下面的情况：</p>
-<p>我们写了一个函数，函数需要调用其他模块或者服务获取结果，然后我们的函数对获取到的结果进行处理并返回处理后的结果。这里的服务可能是远程服务调用也可能是数据库服务调用，那么我们如果要对这个函数进行单元测试就一定需要保证远程服务调用当前或者当前数据库服务可用么？</p>
-<p>答案是：不用。</p>
-<p>一方面为了进行一个简单的单元测试就要调用服务显然太浪费，在资源使用上也不合理，另一方面远程服务或者数据库服务可能也正在开发或者还没有开始开发，我们也不能因此就不进行单元测试。这种情况正是Mock发挥威力的时候。</p>
-<p>Mock简单来说就是为我们模拟单元测试中需要使用到的其他资源并提供资源对应的服务而简化单元测试工作，使单元测试与其依赖的服务解耦。</p>
-<p>下面我们写一个具体的例子，我们使用的Mock工具为Mockito，我们模拟的单元测试需要的服务是一个数据库服务。</p>
-<h2 id="Maven依赖">Maven依赖</h2><p>假设使用版本是1.8.5，则在Maven项目中POM.xml配置依赖：</p>
-<pre><code><span class="tag">&lt;<span class="title">dependency</span>&gt;</span>
-     <span class="tag">&lt;<span class="title">groupId</span>&gt;</span>org.mockito<span class="tag">&lt;/<span class="title">groupId</span>&gt;</span>
-     <span class="tag">&lt;<span class="title">artifactId</span>&gt;</span>mockito-all<span class="tag">&lt;/<span class="title">artifactId</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">version</span>&gt;</span>1.8.5<span class="tag">&lt;/<span class="title">version</span>&gt;</span>
-    <span class="tag">&lt;<span class="title">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="title">scope</span>&gt;</span>
-<span class="tag">&lt;/<span class="title">dependency</span>&gt;</span>
-</code></pre><h2 id="Mock使用示例">Mock使用示例</h2><p>我们写了一个DBController类，其主要任务是调用数据库服务，获取当前用户的信息并返回是否成功，代码如下：</p>
-<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">DBController</span> </span>{
-    <span class="keyword">private</span> DBService dbService;
-    <span class="function"><span class="keyword">public</span> <span class="title">DBController</span><span class="params">(DBService dbService)</span></span>{
-        <span class="keyword">this</span>.dbService = dbService;
-    }
-    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">getUserInfoData</span><span class="params">(Map&lt;String,Useruser)</span></span>{
-        user.put(<span class="string">"user"</span>, dbService.getUserInfoData());
-        <span class="keyword">return</span> user.size() <span class="number">0</span>;
-    }
-}
-</code></pre><p>要对其进行单元测试我们就需要模拟出一个DBService类的对象，并提供对应的getUserInfoData()方法实现。</p>
-<p>使用Mock的如下代码可以模拟出一个DBService对象：</p>
-<pre><code>DBService dbService = Mockito.mock(DBService.<span class="keyword">class</span>);
-</code></pre><p>然后我们知道getUserInfoData()方法会返回一个User对象，因此我们可以用如下代码模拟这个方法的实现：</p>
-<pre><code>User expectedUser =new User<span class="params">(<span class="string">"User1"</span>)</span>;
-Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">()</span>)</span>.thenReturn<span class="params">(expectedUser)</span>;
-</code></pre><p>这两行代码表示当调用dbService.getUserInfoData()方法时就会返回我们声明的expectedUser对象。</p>
-<p>我们所需要的数据库服务已经完全用Mock模拟出来了，接下来就可以开始单元测试了，我们结合使用TestNG进行单元测试，代码如下：</p>
-<pre><code>public class DBControllerTest {
-
-    @Test
-    public void testMethod_getUserInfoData<span class="params">()</span>{
-        User expectedUser =new User<span class="params">(<span class="string">"User1"</span>)</span>;
-        DBService dbService = Mockito.mock<span class="params">(DBService.class)</span>;
-        Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">()</span>)</span>.thenReturn<span class="params">(expectedUser)</span>;
-        DBController dbController = new DBController<span class="params">(dbService)</span>;
-        HashMap&lt;String,User&gt; user = new HashMap&lt;String,User&gt;<span class="params">()</span>;
-        boolean succ = dbController.getUserInfoData<span class="params">(user)</span>;
-        <span class="comment">//验证是否成功返回</span>
-        Assert.assertEquals<span class="params">(<span class="literal">true</span>, succ)</span>;
-        <span class="comment">//验证user中获取到到的对象就是Mock返回的对象</span>
-        Assert.assertSame<span class="params">(expectedUser, user.get<span class="params">(<span class="string">"user"</span>)</span>)</span>;
-        <span class="comment">//验证getUserInfoData()的调用只发生了一次</span>
-        Mockito.verify<span class="params">(dbService)</span>.getUserInfoData<span class="params">()</span>;
-    }
-}
-</code></pre><p>以上就是Mock的简单应用，一般的单元测试场景这已经足够使用了，如果需要了解更多Mock使用，可以进一步在<a href="http://mockito.org/" title="Mockito" target="_blank" rel="external">http://mockito.org/</a>进行学习。</p>
-
-        
-      
-    </div>
-
-    <div class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </div>
-  </div>
-
-
     
   </div>
 
-  
 
         </div>
 
@@ -667,6 +412,15 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
   <div id="sidebar" class="sidebar">
     <div class="sidebar-inner">
 
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
       
 
       <div class="site-overview">
@@ -732,6 +486,17 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
       </div>
 
       
+        <div class="post-toc-wrap sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator"></div>
+          <div class="post-toc">
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Thread类"><span class="nav-number">1.</span> <span class="nav-text">1.Thread类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Executor"><span class="nav-number">2.</span> <span class="nav-text">2.Executor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Callable"><span class="nav-number">3.</span> <span class="nav-text">3.Callable</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-休眠、优先级、让步、后台线程、JOIN"><span class="nav-number">4.</span> <span class="nav-text">4.休眠、优先级、让步、后台线程、JOIN</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-异常的捕获"><span class="nav-number">5.</span> <span class="nav-text">5.异常的捕获</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
+        </div>
+      
 
     </div>
   </div>
@@ -779,6 +544,145 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
   <script type="text/javascript" src="/js/search-toggle.js"></script>
 
   
+  
+<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.3" id="bootstrap.scrollspy.custom"></script>
+
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var $sidebarInner = $('.sidebar-inner');
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.didShow', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+          var self = this;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      $(indicator).velocity('stop').velocity({
+        opacity: action === 'show' ? 0.4 : 0
+      }, { duration: 100 });
+    }
+
+  });
+</script>
+
+
+  <script type="text/javascript" id="sidebar.nav">
+    $(document).ready(function () {
+      var html = $('html');
+
+      $('.sidebar-nav li').on('click', function () {
+        var item = $(this);
+        var activeTabClassName = 'sidebar-nav-active';
+        var activePanelClassName = 'sidebar-panel-active';
+        if (item.hasClass(activeTabClassName)) {
+          return;
+        }
+
+        var currentTarget = $('.' + activePanelClassName);
+        var target = $('.' + item.data('target'));
+
+        currentTarget.velocity('transition.slideUpOut', 200, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', 200)
+            .addClass(activePanelClassName);
+        });
+
+        item.siblings().removeClass(activeTabClassName);
+        item.addClass(activeTabClassName);
+      });
+
+      $('.post-toc a').on('click', function (e) {
+        e.preventDefault();
+        var offset = $(escapeSelector(this.getAttribute('href'))).offset().top;
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        });
+      });
+
+      // Expand sidebar on post detail page by default, when post has a toc.
+      var $tocContent = $('.post-toc-content');
+      if (isDesktop() && CONFIG.sidebar === 'post') {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          displaySidebar();
+        }
+      }
+    });
+  </script>
+
+
+
 
   <script type="text/javascript">
     $(document).ready(function () {
