@@ -160,6 +160,192 @@
           
           
             
+              <a class="post-title-link" href="/2015/07/07/深入理解内部类（二）/">
+                深入理解内部类（二）
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于 2015-07-07
+        </span>
+
+        
+          <span class="post-category">
+            &nbsp; | &nbsp; 分类于
+            
+              <a href="/categories/CoreJava/">CoreJava</a>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+            &nbsp; | &nbsp;
+            <a href="/2015/07/07/深入理解内部类（二）/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/07/深入理解内部类（二）/"></span>
+            </a>
+          </span>
+          
+        
+      </div>
+    </div>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <h2 id="内部类向上转型">内部类向上转型</h2><p>内部类可以向上转型为其基类或其实现的接口，这个时候内部类就有了较大的用武之地，因为内部类作为某个接口的实现能够完全不可见并且不可用，外围所得到的只是基类或实现接口的引用，因此可以非常方便的隐藏实现细节，例如对应一个private的内部类，给类的设计者提供了一种途径，通过这种方式可以完全阻止任何依赖于类型的编码，完全隐藏实现细节，对于外部调用者，由于不能访问实现类任何新增的，原本不属于公共接口的方法，所以扩展接口是没有意义也是不可能的，这样给Java编译器提供了生产更高效代码的条件，同时也更好的保护了实现类的内部细节。例如如下代码：<br>我们首先定义一个公共接口Course，该接口返回一个课程名。</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title">Course</span> {
+    <span class="function">String <span class="title">getCourseName</span>(<span class="params"></span>)</span>;
+}
+</code></pre><p>然后我们定义一个CourseImpl类，其内部类CourseInnerImpl真正实现Course接口：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="function"><span class="keyword">public</span> CourseInnerImpl <span class="title">getCourseInnerImpl</span><span class="params">()</span></span>{
+        <span class="keyword">return</span> <span class="keyword">new</span> CourseInnerImpl();
+    }
+    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseInnerImpl</span> <span class="keyword">implements</span> <span class="title">Course</span></span>{
+        String coursePref = <span class="string">"CS:"</span>;
+        String[] course ={<span class="string">"C++"</span>,<span class="string">"Java"</span>};
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+            <span class="keyword">return</span> coursePref +course[Math.abs(r.nextInt()%<span class="number">2</span>)];
+        }
+    }
+}
+</code></pre><p>最后我们在第三个类TestCourse里访问Course接口的功能：</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">TestCourse</span> {
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span>(<span class="params">String[] args</span>) </span>{
+        CourseImpl ci = <span class="keyword">new</span> CourseImpl();
+        Course c = ci.getCourseInnerImpl();
+        <span class="comment">//CourseInnerImpl = c2 = ci.getCourseInnerImpl(); 错误</span>
+        System.<span class="keyword">out</span>.println(c.getCourseName());
+        System.<span class="keyword">out</span>.println(c.getCourseName());
+        System.<span class="keyword">out</span>.println(c.getCourseName());
+    }
+}
+</code></pre><p>可以看到我们只能获取到内部类向上转型后的公共接口Course类型，而不能访问到其具体实现CourseInnerImpl类型，即使getCourseInnerImpl()返回的类型是CourseInnerImpl，这样内部类就做到了实现细节的隐藏，外部只需要并只能关注公共接口提供的信息而不能访问内部类的细节。</p>
+<h2 id="在方法和作用域内的内部类-局部内部类">在方法和作用域内的内部类-局部内部类</h2><p>到目前为止我们探讨的内部类都是定义在类作用域内的内部类，其实内部类的用法远不止如此，我们可以在方法内或者任何作用域内定义内部类，这样的内部类称为局部内部类。</p>
+<p>例如，我们可以把上面的CourseImpl类改写成如下方式，CourseInnerImpl类在方法getCourseInnerImpl内，作为一个局部内部类存在，这样，不仅其他类不能访问该内部类，就是类自身除了方法getCourseInnerImpl外都不能访问内部类的具体实现了。</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="function"><span class="keyword">public</span> Course <span class="title">getCourseInnerImpl</span><span class="params">()</span></span>{
+        <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseInnerImpl</span> <span class="keyword">implements</span> <span class="title">Course</span></span>{
+            String coursePref = <span class="string">"CS:"</span>;
+            String[] course ={<span class="string">"C++"</span>,<span class="string">"Java"</span>};
+            <span class="annotation">@Override</span>
+            <span class="function"><span class="keyword">public</span> String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+                <span class="keyword">return</span> coursePref +course[Math.abs(r.nextInt()%<span class="number">2</span>)];
+            }
+        }
+        <span class="keyword">return</span> <span class="keyword">new</span> CourseInnerImpl();
+    }
+}
+</code></pre><p>我们也可以改写为让内部类在方法的某个作用域内，例如：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="function"><span class="keyword">public</span> Course <span class="title">getCourseInnerImpl</span><span class="params">(<span class="keyword">boolean</span> flag)</span></span>{
+        <span class="keyword">if</span>(flag){
+            <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseInnerImpl</span> <span class="keyword">implements</span> <span class="title">Course</span></span>{
+                String coursePref = <span class="string">"CS:"</span>;
+                String[] course ={<span class="string">"C++"</span>,<span class="string">"Java"</span>};
+                <span class="annotation">@Override</span>
+                <span class="function"><span class="keyword">public</span> String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+                    <span class="keyword">return</span> coursePref +course[Math.abs(r.nextInt()%<span class="number">2</span>)];
+                }
+            }
+            <span class="keyword">return</span> <span class="keyword">new</span> CourseInnerImpl();
+        }
+        <span class="keyword">return</span> <span class="keyword">null</span>;
+    }
+}
+</code></pre><p>这并不是说只有满足条件才会创建这个内部类，它其实和其他类一样已经编译了，但是在定义该内部类的作用域之外它是不可用的，除此之外与其他普通类没有任何区别。</p>
+<h2 id="匿名内部类">匿名内部类</h2><p>匿名内部类就是没有名字的内部类，比如如下代码：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="function"><span class="keyword">public</span> Course <span class="title">getCourseInnerImpl</span><span class="params">()</span></span>{
+        <span class="keyword">return</span> <span class="keyword">new</span> Course(){
+            <span class="annotation">@Override</span>
+            <span class="function"><span class="keyword">public</span> String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+                <span class="keyword">return</span> <span class="string">"CLASS NAME"</span>;
+            }
+        };
+    }
+}
+</code></pre><p>其中的</p>
+<pre><code><span class="keyword">return</span> <span class="keyword">new</span> Course(){
+    <span class="annotation">@Override</span>
+    <span class="keyword">public</span> <span class="function">String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+        <span class="keyword">return</span> <span class="string">"CLASS NAME"</span>;
+    }
+}
+</code></pre><p>就是创建了一个实现了Course接口的匿名内部类，其等价于上面提到的在方法内实现的内部类，<code>new</code>表达式返回的引用自动向上转型为Course类型。如果基类需要有参数的构造器，对于匿名内部类，我们同样可以实现：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="keyword">public</span> <span class="function">Course <span class="title">getCourseInnerImpl</span><span class="params">(String name)</span></span>{
+        <span class="keyword">return</span> <span class="keyword">new</span> MyCourse(name){
+            <span class="annotation">@Override</span>
+            <span class="keyword">public</span> <span class="function">String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+                <span class="function"><span class="keyword">return</span> <span class="keyword">super</span>.<span class="title">getName</span><span class="params">()</span></span>;
+            }
+        };
+    }
+}
+</code></pre><p>其中MyCourse是Course接口的一个实现，其有一个参数，这里直接将参数传递给new MyCourse（String name）即可。如果直接使用<code>return name</code>是不行的会导致编译错误，此时我们必须保证传入的参数是final的才可以。之所以我们这里用到<code>return super.getName()</code>进行返回可以，是因为在匿名内部类中不直接用到name。<br>例如：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="function"><span class="keyword">public</span> Course <span class="title">getCourseInnerImpl</span><span class="params">(<span class="keyword">final</span> String name)</span></span>{
+        <span class="keyword">return</span> <span class="keyword">new</span> MyCourse(name){
+            <span class="annotation">@Override</span>
+            <span class="function"><span class="keyword">public</span> String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+                <span class="keyword">return</span> name;
+            }
+        };
+    }
+} 
+</code></pre><p>内部类虽然可以扩展类，也可以实现接口，但是并不能两者兼备，而且实现接口的时候也只能实现一个接口，同样，由于没有名字，在匿名内部类中不可能有命名构造器，只能通过实例初始化方式达到构造器的效果，但是由于不能重载实例初始化方法，所以匿名内部类也只有一个“构造器”。</p>
+
+        
+      
+    </div>
+
+    <div class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </div>
+  </div>
+
+
+    
+      
+
+  <div class="post post-type-normal ">
+    <div class="post-header">
+
+      
+      
+        <h1 class="post-title">
+          
+          
+            
               <a class="post-title-link" href="/2015/07/07/Java并发编程（二）/">
                 Java并发编程（二）
               </a>
@@ -761,7 +947,7 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
         <div class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

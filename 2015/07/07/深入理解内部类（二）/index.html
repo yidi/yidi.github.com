@@ -24,7 +24,7 @@
 
 
 
-  <meta name="keywords" content="Java并发编程," />
+  <meta name="keywords" content="Inner Class," />
 
 
 
@@ -47,7 +47,7 @@
 
 
 
-  <title> Java并发编程（二） // YIDI'S BLOG </title>
+  <title> 深入理解内部类（二） // YIDI'S BLOG </title>
 </head>
 
 <body>
@@ -158,7 +158,7 @@
           
           
             
-              Java并发编程（二）
+              深入理解内部类（二）
             
           
         </h1>
@@ -186,8 +186,8 @@
           
             <span class="post-comments-count">
             &nbsp; | &nbsp;
-            <a href="/2015/07/07/Java并发编程（二）/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/07/Java并发编程（二）/"></span>
+            <a href="/2015/07/07/深入理解内部类（二）/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/07/深入理解内部类（二）/"></span>
             </a>
           </span>
           
@@ -201,13 +201,116 @@
       
 
       
-        <p>这篇简单介绍线程资源共享即同步问题。</p>
-<p>多线程各自运行，你就无法确定一个线程何时在运行，当前哪个线程在运行。这在对<strong>临界资源</strong>访问时就肯定会出现问题，假设如果两个线程试图同时获取一个相同的资源的时候，如果不加以控制，就可能至少有其中一个线程访问到状态不正确的资源，因此使用线程时一个重要的工作就是进行线程的同步。基本上并发模式在解决线程冲突问题的时候基本上都是采用序列化访问共享资源的方案，不同的场景有具体的不同处理方式。</p>
-<h2 id="1-Synchronized_&amp;_Lock">1.Synchronized &amp; Lock</h2><p>Java中通过synchronized 关键字为资源冲突提供了内置支持，当任务要执行被synchronized 保护的代码时，会<strong>先检查锁是否可用，之后获取锁，然后执行代码，最后释放锁</strong>。<br>所有的共享资源一般是以对象的形式存在内存片段中，但也可以是文件，IO端口，打印机等。要控制对共享资源的访问，先要将其包装进一个对象，然后把所有要访问这个资源的方法标记为synchronized。如<strong>果某个任务处于对标记为synchronized 的方法的调用中，那么在这个任务从该方法返回前，其他所有要调用该被标记为synchronized 的方法的任务都会被阻塞</strong>。<br>所有对象都自动含有单一的锁，当<strong>一个任务</strong>在对象上调用其任意的synchronized 方法时，此对象都被加锁。这时<strong>其他任何任务</strong>要调用该对象上其他的synchronized 方法只有等到前一个synchronized 方法调用完毕并释放了锁之后才能被调用。<br>一个任务可以多次获得对象的锁，如果该任务已经获得当前对象的锁，那么它在调用了该对象的synchronized 方法后，如果该方法需要继续调用对象的另一个synchronized 方法是可以的，JVM负责跟踪和维护对象被加锁的次数，如果对象被第一次加锁，则计数器为1，下一次加锁计数器为2，直到完全释放，计数器变为0，此时其他任务就可以调用对象的synchronized 方法了，但是在计数器不为0的时候，只有当前已经获取到锁的任务可以调用对象的synchronized 方法。<br>针对每一个类，也有一个锁 。synchronized static 可以保证在类的范围内防止对static数据的并发访问。<br>如果在类中有超过一个方法在处理临界资源，那必须同步所有处理这些资源的相关方法，否则并发就不能正常工作。<br> 除了使用synchronized 之外，还可以使用Lock进行显示的加锁操作，显示的加锁比synchronized 更灵活，具有更细粒度的操作，可以在锁失败时可以做一些清理工作，显示的锁操作必须使用try catch finally语句，并且数据返回必须在try语句块中，以确保unlock()不会过早发声，将数据暴露给其他任务，而且必须有finally语句块，在其中处理unlock()操作。显示的加锁操作比synchronized赋予了更灵活的特性，但是维护起来比synchronized 跟复杂，代码也更更容易出错，但是由于显示加锁允许做更多的控制，因此适用范围更广。</p>
-<h2 id="2-Volatile">2.Volatile</h2><p>在Java中<strong>不能依赖原子性就不使用同步</strong>，volatile关键字修饰属性主要是为了<strong>保证可视性但不保证互斥</strong>，因为一般情况下，线程对域的修改即使是不中断的原子操作，对其他任务也可能是不可见的，因为此时的修改可能只是暂时性的存储在线程的本地处理器的缓存中（不强制必须刷到主存中），不同任务对应用有不同的视图，volatile 保证了如果一个域一旦发生了写操作，就强制将修改立即写入主存中，这样就保证了修改的可视性。<br>当一个域的值依赖于它之前的值或者一个域的值依赖其他域的值，那么volatile就无法正常工作了，使用volatile而不是使用synchronized唯一安全的情况是类中只有一个可变的域。第一选择是使用synchronized而不是有风险的volatile。同一个变量线程之间的可见性和线程中相互操作的互斥性是两件事情。操作互斥是提供了操作整体的原子性，千万不能混淆。</p>
-<h2 id="3-Atomic">3.Atomic</h2><p>在concurrent包中，实现了多个特殊的元自行变量类型，对这些类型使用原子性操作不需要使用synchronized等同步机制而可以保证正确性。Atomic类型性能比使用同步更好，JDK是通过JNI的方式使用了硬件支持的CAS指令，一般的我们更倾向于使用synchronized或者Lock等方式，而避免可能的安全性问题，除非有特别的性能要求。</p>
-<h2 id="4-临界区">4.临界区</h2><p>有时候，你并不需要对整个方法进行同步，而只需要对方法中的部分临界资源进行同步，通过这种方式分离出来的代码段被称为临界区，它也可以使用synchronized建立，此时需要在synchronized中指定一个对象，表示此对象的锁被用来对括号内的代码进行同步控制，这段代码就称为临界区，也即同步控制块，在进入这段代码前必须获取同步对象的锁，否则只能等待，通过使用同步控制块而不是使用整个方法的同步控制。可以使多个任务访问对象的时间性能得到显著提高。<br>synchronized块一般的用法是在当前对象上加锁，即synchronized(this)，此时其他任务就不能对该对象的所有其他synchronized进行调用了。但是如果当前对象的不同的synchronized 块加锁的对象是不一样的，则加锁对象不一样的同步控制块彼此不是互斥的，也即一个任务在访问该对象的synchronized(Object1)同步控制块时，另一个任务也可以同时访问该对象的另一个同步控制块synchronized(Obeject2).<br>如果需要对一个非线程安全的类进行线程安全的操作，我们可以创建一个该类的Manager类，通过在该Manager类中的同步方法访问该类从而实现非线程安全的类的线程安全的访问。 </p>
-<h2 id="5-线程本地存储">5.线程本地存储</h2><p>为了对每个线程都创建变量的本地存储，可以使用concurrent.ThreadLocal类，这样每个线程都会创建自己线程的本地存储变量，线程之间不共享该变量，也就不需要同步控制了。例如：TreadLocal<integer> 。</integer></p>
+        <h2 id="内部类向上转型">内部类向上转型</h2><p>内部类可以向上转型为其基类或其实现的接口，这个时候内部类就有了较大的用武之地，因为内部类作为某个接口的实现能够完全不可见并且不可用，外围所得到的只是基类或实现接口的引用，因此可以非常方便的隐藏实现细节，例如对应一个private的内部类，给类的设计者提供了一种途径，通过这种方式可以完全阻止任何依赖于类型的编码，完全隐藏实现细节，对于外部调用者，由于不能访问实现类任何新增的，原本不属于公共接口的方法，所以扩展接口是没有意义也是不可能的，这样给Java编译器提供了生产更高效代码的条件，同时也更好的保护了实现类的内部细节。例如如下代码：<br>我们首先定义一个公共接口Course，该接口返回一个课程名。</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title">Course</span> {
+    <span class="function">String <span class="title">getCourseName</span>(<span class="params"></span>)</span>;
+}
+</code></pre><p>然后我们定义一个CourseImpl类，其内部类CourseInnerImpl真正实现Course接口：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="function"><span class="keyword">public</span> CourseInnerImpl <span class="title">getCourseInnerImpl</span><span class="params">()</span></span>{
+        <span class="keyword">return</span> <span class="keyword">new</span> CourseInnerImpl();
+    }
+    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseInnerImpl</span> <span class="keyword">implements</span> <span class="title">Course</span></span>{
+        String coursePref = <span class="string">"CS:"</span>;
+        String[] course ={<span class="string">"C++"</span>,<span class="string">"Java"</span>};
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+            <span class="keyword">return</span> coursePref +course[Math.abs(r.nextInt()%<span class="number">2</span>)];
+        }
+    }
+}
+</code></pre><p>最后我们在第三个类TestCourse里访问Course接口的功能：</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">TestCourse</span> {
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span>(<span class="params">String[] args</span>) </span>{
+        CourseImpl ci = <span class="keyword">new</span> CourseImpl();
+        Course c = ci.getCourseInnerImpl();
+        <span class="comment">//CourseInnerImpl = c2 = ci.getCourseInnerImpl(); 错误</span>
+        System.<span class="keyword">out</span>.println(c.getCourseName());
+        System.<span class="keyword">out</span>.println(c.getCourseName());
+        System.<span class="keyword">out</span>.println(c.getCourseName());
+    }
+}
+</code></pre><p>可以看到我们只能获取到内部类向上转型后的公共接口Course类型，而不能访问到其具体实现CourseInnerImpl类型，即使getCourseInnerImpl()返回的类型是CourseInnerImpl，这样内部类就做到了实现细节的隐藏，外部只需要并只能关注公共接口提供的信息而不能访问内部类的细节。</p>
+<h2 id="在方法和作用域内的内部类-局部内部类">在方法和作用域内的内部类-局部内部类</h2><p>到目前为止我们探讨的内部类都是定义在类作用域内的内部类，其实内部类的用法远不止如此，我们可以在方法内或者任何作用域内定义内部类，这样的内部类称为局部内部类。</p>
+<p>例如，我们可以把上面的CourseImpl类改写成如下方式，CourseInnerImpl类在方法getCourseInnerImpl内，作为一个局部内部类存在，这样，不仅其他类不能访问该内部类，就是类自身除了方法getCourseInnerImpl外都不能访问内部类的具体实现了。</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="function"><span class="keyword">public</span> Course <span class="title">getCourseInnerImpl</span><span class="params">()</span></span>{
+        <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseInnerImpl</span> <span class="keyword">implements</span> <span class="title">Course</span></span>{
+            String coursePref = <span class="string">"CS:"</span>;
+            String[] course ={<span class="string">"C++"</span>,<span class="string">"Java"</span>};
+            <span class="annotation">@Override</span>
+            <span class="function"><span class="keyword">public</span> String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+                <span class="keyword">return</span> coursePref +course[Math.abs(r.nextInt()%<span class="number">2</span>)];
+            }
+        }
+        <span class="keyword">return</span> <span class="keyword">new</span> CourseInnerImpl();
+    }
+}
+</code></pre><p>我们也可以改写为让内部类在方法的某个作用域内，例如：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="function"><span class="keyword">public</span> Course <span class="title">getCourseInnerImpl</span><span class="params">(<span class="keyword">boolean</span> flag)</span></span>{
+        <span class="keyword">if</span>(flag){
+            <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseInnerImpl</span> <span class="keyword">implements</span> <span class="title">Course</span></span>{
+                String coursePref = <span class="string">"CS:"</span>;
+                String[] course ={<span class="string">"C++"</span>,<span class="string">"Java"</span>};
+                <span class="annotation">@Override</span>
+                <span class="function"><span class="keyword">public</span> String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+                    <span class="keyword">return</span> coursePref +course[Math.abs(r.nextInt()%<span class="number">2</span>)];
+                }
+            }
+            <span class="keyword">return</span> <span class="keyword">new</span> CourseInnerImpl();
+        }
+        <span class="keyword">return</span> <span class="keyword">null</span>;
+    }
+}
+</code></pre><p>这并不是说只有满足条件才会创建这个内部类，它其实和其他类一样已经编译了，但是在定义该内部类的作用域之外它是不可用的，除此之外与其他普通类没有任何区别。</p>
+<h2 id="匿名内部类">匿名内部类</h2><p>匿名内部类就是没有名字的内部类，比如如下代码：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="function"><span class="keyword">public</span> Course <span class="title">getCourseInnerImpl</span><span class="params">()</span></span>{
+        <span class="keyword">return</span> <span class="keyword">new</span> Course(){
+            <span class="annotation">@Override</span>
+            <span class="function"><span class="keyword">public</span> String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+                <span class="keyword">return</span> <span class="string">"CLASS NAME"</span>;
+            }
+        };
+    }
+}
+</code></pre><p>其中的</p>
+<pre><code><span class="keyword">return</span> <span class="keyword">new</span> Course(){
+    <span class="annotation">@Override</span>
+    <span class="keyword">public</span> <span class="function">String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+        <span class="keyword">return</span> <span class="string">"CLASS NAME"</span>;
+    }
+}
+</code></pre><p>就是创建了一个实现了Course接口的匿名内部类，其等价于上面提到的在方法内实现的内部类，<code>new</code>表达式返回的引用自动向上转型为Course类型。如果基类需要有参数的构造器，对于匿名内部类，我们同样可以实现：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="keyword">public</span> <span class="function">Course <span class="title">getCourseInnerImpl</span><span class="params">(String name)</span></span>{
+        <span class="keyword">return</span> <span class="keyword">new</span> MyCourse(name){
+            <span class="annotation">@Override</span>
+            <span class="keyword">public</span> <span class="function">String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+                <span class="function"><span class="keyword">return</span> <span class="keyword">super</span>.<span class="title">getName</span><span class="params">()</span></span>;
+            }
+        };
+    }
+}
+</code></pre><p>其中MyCourse是Course接口的一个实现，其有一个参数，这里直接将参数传递给new MyCourse（String name）即可。如果直接使用<code>return name</code>是不行的会导致编译错误，此时我们必须保证传入的参数是final的才可以。之所以我们这里用到<code>return super.getName()</code>进行返回可以，是因为在匿名内部类中不直接用到name。<br>例如：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CourseImpl</span></span>{
+    Random r = <span class="keyword">new</span> Random(<span class="number">48</span>);
+    <span class="function"><span class="keyword">public</span> Course <span class="title">getCourseInnerImpl</span><span class="params">(<span class="keyword">final</span> String name)</span></span>{
+        <span class="keyword">return</span> <span class="keyword">new</span> MyCourse(name){
+            <span class="annotation">@Override</span>
+            <span class="function"><span class="keyword">public</span> String <span class="title">getCourseName</span><span class="params">()</span> </span>{
+                <span class="keyword">return</span> name;
+            }
+        };
+    }
+} 
+</code></pre><p>内部类虽然可以扩展类，也可以实现接口，但是并不能两者兼备，而且实现接口的时候也只能实现一个接口，同样，由于没有名字，在匿名内部类中不可能有命名构造器，只能通过实例初始化方式达到构造器的效果，但是由于不能重载实例初始化方法，所以匿名内部类也只有一个“构造器”。</p>
 
       
     </div>
@@ -216,7 +319,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Java并发编程/"> #Java并发编程 </a>
+            <a href="/tags/Inner-Class/"> #Inner Class </a>
           
         </div>
       
@@ -225,13 +328,11 @@
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2015/07/07/深入理解内部类（二）/">深入理解内部类（二）</a>
-            
           </div>
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2015/07/05/Java并发编程（一）/">Java并发编程（一）</a>
+              <a href="/2015/07/07/Java并发编程（二）/">Java并发编程（二）</a>
             
           </div>
         </div>
@@ -251,8 +352,8 @@
     
       <div class="comments" id="comments">
         
-          <div class="ds-thread" data-thread-key="2015/07/07/Java并发编程（二）/"
-               data-title="Java并发编程（二）" data-url="http://yoursite.com/2015/07/07/Java并发编程（二）/">
+          <div class="ds-thread" data-thread-key="2015/07/07/深入理解内部类（二）/"
+               data-title="深入理解内部类（二）" data-url="http://yoursite.com/2015/07/07/深入理解内部类（二）/">
           </div>
         
       </div>
@@ -358,7 +459,7 @@
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Synchronized_&_Lock"><span class="nav-number">1.</span> <span class="nav-text">1.Synchronized & Lock</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Volatile"><span class="nav-number">2.</span> <span class="nav-text">2.Volatile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Atomic"><span class="nav-number">3.</span> <span class="nav-text">3.Atomic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-临界区"><span class="nav-number">4.</span> <span class="nav-text">4.临界区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-线程本地存储"><span class="nav-number">5.</span> <span class="nav-text">5.线程本地存储</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#内部类向上转型"><span class="nav-number">1.</span> <span class="nav-text">内部类向上转型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#在方法和作用域内的内部类-局部内部类"><span class="nav-number">2.</span> <span class="nav-text">在方法和作用域内的内部类-局部内部类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#匿名内部类"><span class="nav-number">3.</span> <span class="nav-text">匿名内部类</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>
