@@ -160,6 +160,295 @@
           
           
             
+              <a class="post-title-link" href="/2015/07/08/深入理解内部类（三）/">
+                深入理解内部类（三）
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于 2015-07-08
+        </span>
+
+        
+          <span class="post-category">
+            &nbsp; | &nbsp; 分类于
+            
+              <a href="/categories/CoreJava/">CoreJava</a>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+            &nbsp; | &nbsp;
+            <a href="/2015/07/08/深入理解内部类（三）/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/08/深入理解内部类（三）/"></span>
+            </a>
+          </span>
+          
+        
+      </div>
+    </div>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <h2 id="内部类的作用">内部类的作用</h2><p>以上我们已经谈论了很多内部类的知识，但是这些知识都知识语法和语义层面的，但是内部类真正的作用是什么呢？我们知道内部类可以操作其外部类的成员，也就是说内部类是进入外部类的一个窗口。</p>
+<p>如果知识通过内部类实现一个接口，那么其实这完全可以通过让外部类去实现就可以完成，确实，这样没错，如果只是实现一个接口外部类就可以满足，但是事实并不总是这样的，我们直到Java是单继承的，如果要继承多个(接口的)实现外部类就无能为力了，而内部类有效的实现了<strong>多重继承</strong>。每一个内部类都可以独立的继承一个实现，而不论其外部类是否继承了某个实现。</p>
+<p>记住，内部类是一个独立的个体，同时外部类的每个内部类都可以以不同的方式实现同一个接口或继承同一个类，这样多重继承的场景就得到了完善。</p>
+<h3 id="闭包与回调">闭包与回调</h3><p>闭包是一个可调用的对象，它记录了一些信息，这些信息来自于创建它的作用域。通过这个定义可以看出内部类是面向对象的闭包。</p>
+<p>通过回调，对象能够携带一些信息，这些信息允许它在稍后的某个时刻调用初始的对象。<br>例如如下的代码：</p>
+<p>首先定义一个接口 Incrementable，有一个方法 increment()</p>
+<pre><code><span class="keyword">interface</span> <span class="title">Incrementable</span>{
+    <span class="function"><span class="keyword">void</span> <span class="title">increment</span>(<span class="params"></span>)</span>;
+}
+</code></pre><p>然后定义一个类MyIncrement，其与接口有相同的方法increment();</p>
+<pre><code><span class="keyword">class</span> <span class="title">MyIncrement</span>{
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">increment</span>(<span class="params"></span>)</span>{
+        System.<span class="keyword">out</span>.println(<span class="string">"MyIncrement"</span>);
+    }
+}
+</code></pre><p>之后再定义一个Callee类，其继承自 MyIncrement，我们看到其覆写了MyIncrement的increment()方法,如果直接再实现接口我们就不知道覆写的这个increment()到底是实现Incrementable接口的实现还是覆写MyIncrement，因此我们通过一个内部类Closure 实现这个Incrementable接口并实现其对应的increment()方法，这个increment()是一个回调方法，以提供返回Callee的钩子(hook),而且很安全，因为任何人获得这个引用，都只能调用increment()方法，通过Callee.this.increment()回调了Callee类。</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">Callee</span> <span class="keyword">extends</span> <span class="title">MyIncrement</span></span>{
+    <span class="keyword">private</span> <span class="keyword">int</span> i = <span class="number">0</span>;
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">increment</span><span class="params">()</span> </span>{
+        <span class="keyword">super</span>.increment();
+        System.out.println(i++);
+    }
+    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">Closure</span> <span class="keyword">implements</span> <span class="title">Incrementable</span></span>{
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">increment</span><span class="params">()</span> </span>{
+            Callee.<span class="keyword">this</span>.increment();
+        }
+    }
+    <span class="function"><span class="keyword">public</span> Incrementable <span class="title">getCallbackReference</span><span class="params">()</span></span>{
+        <span class="keyword">return</span> <span class="keyword">new</span> Closure();
+    }
+}
+</code></pre><p>最后，我们定义一个Caller类，其构造函数需要一个Incrementable引用，之后任意时刻都可以通过此引用回调Callee类。这充分体现了回调的灵活性。</p>
+<pre><code><span class="keyword">class</span> <span class="title">Caller</span>{
+    <span class="keyword">private</span> Incrementable callbackReference;
+    <span class="function"><span class="keyword">public</span> <span class="title">Caller</span>(<span class="params">Incrementable cbh</span>)</span>{
+        callbackReference = cbh;
+    }
+    <span class="function"><span class="keyword">void</span> <span class="title">go</span>(<span class="params"></span>)</span>{
+        callbackReference.increment();
+    }
+}
+</code></pre><p>我们写一个测试类进行下测试，代码如下，我们调用了两次cee.increment()，使Callee的变量i增加为2，然后我们通过cer.go()回调Callee，从输出结果看，我们回调到了Callee。</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">CallBackTest</span> {
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span>(<span class="params">String[] args</span>) </span>{
+        Callee cee = <span class="keyword">new</span> Callee();
+        Caller cer = <span class="keyword">new</span> Caller(cee.getCallbackReference());
+        cee.increment();
+        cee.increment();
+        cer.go();
+    }
+}
+</code></pre><h3 id="内部类与控制框架">内部类与控制框架</h3><p>控制框架是一类特殊的应用程序框架，用来解决响应事件的需求，主要用来响应事件的系统被称为事件驱动的系统。Java中典型的事件驱动系统就是GUI。</p>
+<p>假设有这样一个控制框架，其工作就是在事件“就绪”的时候执行事件，对于如何执行和控制什么，控制框架并不包含任何具体信息，这些动作都由对应的action()动作完成，这个action是通过继承来提供的，而这里的继承是通过内部类实现的。</p>
+<p>下面的抽象类描述了要控制的事件的开始时间，是否就绪，以及一个抽象的action()动作</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Event</span> </span>{
+    <span class="keyword">private</span> <span class="keyword">long</span> eventTime;
+    <span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">long</span> delayTime;
+    <span class="function"><span class="keyword">public</span> <span class="title">Event</span><span class="params">(<span class="keyword">long</span> delayTime)</span></span>{
+        <span class="keyword">this</span>.delayTime = delayTime;
+        start();
+    }
+    <span class="comment">/*
+     * 可以随时重新设置启动计时器
+     */</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span></span>{
+        eventTime = System.nanoTime() + delayTime;
+    }
+    <span class="comment">/*
+     * 表示何时可以运行action()方法。
+     */</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">ready</span><span class="params">()</span></span>{
+        <span class="keyword">return</span> System.nanoTime() &gt;= eventTime;
+    }
+    <span class="function"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title">action</span><span class="params">()</span></span>;
+}
+</code></pre><p>接下来是一个用来管理和触发事件的实际的<strong>控制框架</strong>。</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Controller</span> {
+    <span class="keyword">private</span> List&lt;Event&gt; eventList = <span class="keyword">new</span> ArrayList&lt;Event&gt;();
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addEvent</span>(<span class="params">Event e</span>)</span>{
+        eventList.add(e);
+    }
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span>(<span class="params"></span>)</span>{
+        <span class="keyword">while</span>(eventList.size() &gt;<span class="number">0</span>){
+            <span class="keyword">for</span>(Event e: <span class="keyword">new</span> ArrayList&lt;Event&gt;(eventList)){
+                <span class="keyword">if</span>(e.ready()){
+                    System.<span class="keyword">out</span>.println(e);
+                    e.action();
+                    eventList.remove(e);
+                }
+            }
+        }
+    }
+}
+</code></pre><p>控制框架循环遍历eventList,寻找就绪的(ready())的事件（event）然后运行它(action())并移除。<br>这里我们其实并不知道Event到底做了什么，怎么做，这正式这个设计的关键所在：<strong>使变化的事务与不变的事务相互分离</strong>，这里不变的就是我们要铜鼓控制框架执行这些Event，而变化的就是这些不同的Event所执行的具体动作。这些正是内部类要做的事情：<br>1、控制框架是由单个类创建的，从而使得实现的细节被封装起来，内部类用来表示解决问题锁必须的各种action()的不同实现。<br>2、内部类可以很容易的访问外部类（这里就是Event）成员，从而可以使这种实现变得简单。</p>
+<p>下面是该控制框架的一个特定实现GreenhouseControls：温控室的控制（控制灯光、水、温度及响铃和重启系统等），温控室的各种控制（Event）是非常不同的，但是控制框架的设计使得分离这些不同的代码非常容易。可以在单一的类里产生对同一个基类Event的多种不同实现。</p>
+<pre><code>public <span class="class"><span class="keyword">class</span> <span class="title">GreenhouseControls</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">Controller</span> {</span>
+    <span class="keyword">private</span> boolean light = <span class="literal">false</span>; <span class="comment">//这里只light演示灯光、温度调节器的控制</span>
+    public <span class="class"><span class="keyword">class</span> <span class="title">LightOn</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">Event</span>{</span>
+        public <span class="type">LightOn</span>(long delayTime){
+            <span class="keyword">super</span>(delayTime);
+        }
+        <span class="annotation">@Override</span>
+        public void action() {
+            light = <span class="literal">true</span>;
+        }
+        public <span class="type">String</span> toString(){
+            <span class="keyword">return</span> <span class="string">"Light is on"</span>;
+        }
+    }
+    public <span class="class"><span class="keyword">class</span> <span class="title">LightOff</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">Event</span>{</span>
+        public <span class="type">LightOff</span>(long delayTime){
+            <span class="keyword">super</span>(delayTime);
+        }
+        <span class="annotation">@Override</span>
+        public void action() {
+            light = <span class="literal">false</span>;
+        }
+        public <span class="type">String</span> toString(){
+            <span class="keyword">return</span> <span class="string">"Light is off"</span>;
+        }
+    }
+
+    <span class="keyword">private</span> <span class="type">String</span> thermostat = <span class="string">"Day"</span>;
+    public <span class="class"><span class="keyword">class</span> <span class="title">ThermostatDay</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">Event</span>{</span>
+        public <span class="type">ThermostatDay</span>(long delayTime){
+            <span class="keyword">super</span>(delayTime);
+        }
+        <span class="annotation">@Override</span>
+        public void action() {
+            thermostat = <span class="string">"Day"</span>;
+        }
+        public <span class="type">String</span> toString(){
+            <span class="keyword">return</span> <span class="string">"Thermostat on day setting"</span>;
+        }
+    }
+    public <span class="class"><span class="keyword">class</span> <span class="title">ThermostatNight</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">Event</span>{</span>
+        public <span class="type">ThermostatNight</span>(long delayTime){
+            <span class="keyword">super</span>(delayTime);
+        }
+        <span class="annotation">@Override</span>
+        public void action() {
+            thermostat = <span class="string">"Night"</span>;
+        }
+        public <span class="type">String</span> toString(){
+            <span class="keyword">return</span> <span class="string">"Thermostat on night setting"</span>;
+        }
+    }
+
+    public <span class="class"><span class="keyword">class</span> <span class="title">Bell</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">Event</span>{</span>
+        public <span class="type">Bell</span>(long delayTime){
+            <span class="keyword">super</span>(delayTime);
+        }
+        <span class="annotation">@Override</span>
+        public void action() {
+            addEvent(<span class="keyword">new</span> <span class="type">Bell</span>(delayTime));
+        }
+        public <span class="type">String</span> toString(){
+            <span class="keyword">return</span> <span class="string">"Bing"</span>;
+        }
+    }
+
+    public <span class="class"><span class="keyword">class</span> <span class="title">Restart</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">Event</span>{</span>
+        <span class="keyword">private</span> <span class="type">Event</span>[] eventList;
+        public <span class="type">Restart</span>(long delayTime,<span class="type">Event</span>[] eventList){
+            <span class="keyword">super</span>(delayTime);
+            <span class="keyword">this</span>.eventList = eventList;
+            <span class="keyword">for</span>(<span class="type">Event</span> e: eventList){
+                addEvent(e);
+            }
+        }
+        <span class="annotation">@Override</span>
+        public void action() {
+            <span class="keyword">for</span>(<span class="type">Event</span> e: eventList){
+                e.start();
+                addEvent(e);
+            }
+            start();
+            addEvent(<span class="keyword">this</span>);
+        }
+        public <span class="type">String</span> toString(){
+            <span class="keyword">return</span> <span class="string">"Restarting system"</span>;
+        }
+    }
+
+    public static <span class="class"><span class="keyword">class</span> <span class="title">Terminate</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">Event</span>{</span>
+        public <span class="type">Terminate</span>(long delayTime) {
+            <span class="keyword">super</span>(delayTime);
+        }
+        <span class="annotation">@Override</span>
+        public void action() {
+            <span class="type">System</span>.exit(<span class="number">0</span>);
+        }
+        public <span class="type">String</span> toString(){
+            <span class="keyword">return</span> <span class="string">"Terminating system"</span>;
+        }
+    }
+}
+</code></pre><p>Light 和 Thermostat 控制比较好理解，Bell控制响铃，然后在事件列表上增加一个Bell对象，于是过一段事件后可以再次响铃。而Restart控制系统重启，一个有Event对象组成的数组被递交给Restart，该数组被加到控制器上，由于Restart本身也是一个Event所以同样可以加到Restart.action()中，以使系统有规律的重新启动自己。</p>
+<p>下面的类通过创建GreenhouseControls对象，并添加各种不同的Event对象来配置该系统：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GreenhouseController</span> </span>{
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> main(String[] args) {
+        GreenhouseControls gc = <span class="keyword">new</span> GreenhouseControls();
+        gc.addEvent(gc.<span class="keyword">new</span> Bell(<span class="number">1000</span>));
+        Event[] eventList = { gc.<span class="keyword">new</span> LightOn(<span class="number">200</span>), gc.<span class="keyword">new</span> LightOff(<span class="number">400</span>),
+                gc.<span class="keyword">new</span> ThermostatNight(<span class="number">0</span>), gc.<span class="keyword">new</span> ThermostatDay(<span class="number">600</span>) };
+        gc.addEvent(gc.<span class="keyword">new</span> Restart(<span class="number">2000</span>, eventList));
+        gc.addEvent(<span class="keyword">new</span> GreenhouseControls.Terminate(<span class="number">1000000</span>));
+        gc.run();
+    }
+}
+</code></pre><p>这个类初始化系统，所以添加了所有响应的事件，Restart事件反复运行，且它每次都会将EventList加载到GreenhouseControls对象中。我们这时就会发现内部类的强大了，特别是在控制框架中，在Java GUI中内部类的作用体现的更为充分。</p>
+
+        
+      
+    </div>
+
+    <div class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </div>
+  </div>
+
+
+    
+      
+
+  <div class="post post-type-normal ">
+    <div class="post-header">
+
+      
+      
+        <h1 class="post-title">
+          
+          
+            
               <a class="post-title-link" href="/2015/07/07/深入理解内部类（二）/">
                 深入理解内部类（二）
               </a>
@@ -316,7 +605,28 @@
     }
 } 
 </code></pre><p>内部类虽然可以扩展类，也可以实现接口，但是并不能两者兼备，而且实现接口的时候也只能实现一个接口，同样，由于没有名字，在匿名内部类中不可能有命名构造器，只能通过实例初始化方式达到构造器的效果，但是由于不能重载实例初始化方法，所以匿名内部类也只有一个“构造器”。</p>
+<h2 id="嵌套类">嵌套类</h2><p>嵌套类一般的指静态内部类，即static class，静态内部类和普通类有以下不同：<br>1、创建静态内部类对象时，不需要其外部类的对象<br>2、不能从静态内部类的对象中访问非静态的外部类对象<br>3、静态内部类可以有static字段和数据，而普通内部类不可以。</p>
+<p>另外嵌套类还有如下表示形式，可以看到不管嵌套多少层，内部类都可以透明的访问其所有外部类的成员，并且内部类的创建也会自然的自动根据其直接外部类创建。</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClassA</span> </span>{
+    <span class="keyword">private</span> <span class="keyword">int</span> a = <span class="number">1</span>;
+    <span class="class"><span class="keyword">class</span> <span class="title">ClassB</span></span>{
+        <span class="keyword">private</span> <span class="keyword">int</span> b = a + <span class="number">1</span>;
+        <span class="class"><span class="keyword">class</span> <span class="title">ClassC</span></span>{
+            <span class="keyword">private</span> <span class="keyword">int</span> c = a + b + <span class="number">1</span>;
+            <span class="class"><span class="keyword">class</span> <span class="title">ClassD</span></span>{
+                <span class="keyword">private</span> <span class="keyword">int</span> d = a + b + c +<span class="number">1</span>;
+            }
+        }
+    }
 
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> main(String[] args){
+        ClassA a = <span class="keyword">new</span> ClassA();
+        ClassA.ClassB b = a.<span class="keyword">new</span> ClassB();
+        ClassA.ClassB.ClassC c = b.<span class="keyword">new</span> ClassC();
+        ClassA.ClassB.ClassC.ClassD d= c.<span class="keyword">new</span> ClassD();
+    }
+}
+</code></pre>
         
       
     </div>
@@ -947,7 +1257,7 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
         <div class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">5</span>
+              <span class="site-state-item-count">6</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

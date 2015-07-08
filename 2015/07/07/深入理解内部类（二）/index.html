@@ -311,7 +311,28 @@
     }
 } 
 </code></pre><p>内部类虽然可以扩展类，也可以实现接口，但是并不能两者兼备，而且实现接口的时候也只能实现一个接口，同样，由于没有名字，在匿名内部类中不可能有命名构造器，只能通过实例初始化方式达到构造器的效果，但是由于不能重载实例初始化方法，所以匿名内部类也只有一个“构造器”。</p>
+<h2 id="嵌套类">嵌套类</h2><p>嵌套类一般的指静态内部类，即static class，静态内部类和普通类有以下不同：<br>1、创建静态内部类对象时，不需要其外部类的对象<br>2、不能从静态内部类的对象中访问非静态的外部类对象<br>3、静态内部类可以有static字段和数据，而普通内部类不可以。</p>
+<p>另外嵌套类还有如下表示形式，可以看到不管嵌套多少层，内部类都可以透明的访问其所有外部类的成员，并且内部类的创建也会自然的自动根据其直接外部类创建。</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClassA</span> </span>{
+    <span class="keyword">private</span> <span class="keyword">int</span> a = <span class="number">1</span>;
+    <span class="class"><span class="keyword">class</span> <span class="title">ClassB</span></span>{
+        <span class="keyword">private</span> <span class="keyword">int</span> b = a + <span class="number">1</span>;
+        <span class="class"><span class="keyword">class</span> <span class="title">ClassC</span></span>{
+            <span class="keyword">private</span> <span class="keyword">int</span> c = a + b + <span class="number">1</span>;
+            <span class="class"><span class="keyword">class</span> <span class="title">ClassD</span></span>{
+                <span class="keyword">private</span> <span class="keyword">int</span> d = a + b + c +<span class="number">1</span>;
+            }
+        }
+    }
 
+    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> main(String[] args){
+        ClassA a = <span class="keyword">new</span> ClassA();
+        ClassA.ClassB b = a.<span class="keyword">new</span> ClassB();
+        ClassA.ClassB.ClassC c = b.<span class="keyword">new</span> ClassC();
+        ClassA.ClassB.ClassC.ClassD d= c.<span class="keyword">new</span> ClassD();
+    }
+}
+</code></pre>
       
     </div>
 
@@ -327,6 +348,8 @@
       
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/07/08/深入理解内部类（三）/">深入理解内部类（三）</a>
             
           </div>
 
@@ -400,7 +423,7 @@
         <div class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">5</span>
+              <span class="site-state-item-count">6</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
@@ -459,7 +482,7 @@
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#内部类向上转型"><span class="nav-number">1.</span> <span class="nav-text">内部类向上转型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#在方法和作用域内的内部类-局部内部类"><span class="nav-number">2.</span> <span class="nav-text">在方法和作用域内的内部类-局部内部类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#匿名内部类"><span class="nav-number">3.</span> <span class="nav-text">匿名内部类</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#内部类向上转型"><span class="nav-number">1.</span> <span class="nav-text">内部类向上转型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#在方法和作用域内的内部类-局部内部类"><span class="nav-number">2.</span> <span class="nav-text">在方法和作用域内的内部类-局部内部类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#匿名内部类"><span class="nav-number">3.</span> <span class="nav-text">匿名内部类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#嵌套类"><span class="nav-number">4.</span> <span class="nav-text">嵌套类</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>
