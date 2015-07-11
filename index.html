@@ -249,7 +249,7 @@
         System.out.println(<span class="string">"T2.ISINTERRUPTED:"</span>+ t2.isInterrupted());
     }
 }
-</code></pre><p>需要说明的是interrupted()方法会清除中断状态使其复位,而isInterrupted()方法只判断当前中断状态，并不复位状态。其实isInterrupted调用了本地方法isInterrupted(boolean ClearInterrupted)并传了参数为false。</p>
+</code></pre><p>需要说明的是interrupted()方法会清除中断状态使其复位,而isInterrupted()方法只判断当前中断状态，并不复位状态。其实isInterrupted()是调用了本地方法isInterrupted(boolean ClearInterrupted)并传了参数为false。</p>
 
         
       
