@@ -201,8 +201,8 @@
       
 
       
-        <h2 id="内部类的作用">内部类的作用</h2><p>以上我们已经谈论了很多内部类的知识，但是这些知识都知识语法和语义层面的，但是内部类真正的作用是什么呢？我们知道内部类可以操作其外部类的成员，也就是说内部类是进入外部类的一个窗口。</p>
-<p>如果知识通过内部类实现一个接口，那么其实这完全可以通过让外部类去实现就可以完成，确实，这样没错，如果只是实现一个接口外部类就可以满足，但是事实并不总是这样的，我们直到Java是单继承的，如果要继承多个(接口的)实现外部类就无能为力了，而内部类有效的实现了<strong>多重继承</strong>。每一个内部类都可以独立的继承一个实现，而不论其外部类是否继承了某个实现。</p>
+        <h2 id="内部类的作用">内部类的作用</h2><p>以上我们已经谈论了很多内部类的知识，但是这些知识都只是语法和语义层面的，但是内部类真正的作用是什么呢？我们知道内部类可以操作其外部类的成员，也就是说内部类是进入外部类的一个窗口。</p>
+<p>如果只是通过内部类实现一个接口，那么其实这完全可以通过让外部类去实现就可以完成，确实，这样没错，如果只是实现一个接口外部类就可以满足，但是事实并不总是这样的，我们知道Java是单继承的，如果要继承多个(接口的)实现外部类就无能为力了，而内部类有效的实现了<strong>多重继承</strong>。每一个内部类都可以独立的继承一个实现，而不论其外部类是否继承了某个实现。</p>
 <p>记住，内部类是一个独立的个体，同时外部类的每个内部类都可以以不同的方式实现同一个接口或继承同一个类，这样多重继承的场景就得到了完善。</p>
 <h3 id="闭包与回调">闭包与回调</h3><p>闭包是一个可调用的对象，它记录了一些信息，这些信息来自于创建它的作用域。通过这个定义可以看出内部类是面向对象的闭包。</p>
 <p>通过回调，对象能够携带一些信息，这些信息允许它在稍后的某个时刻调用初始的对象。<br>例如如下的代码：</p>
@@ -400,7 +400,7 @@
         }
     }
 }
-</code></pre><p>Light 和 Thermostat 控制比较好理解，Bell控制响铃，然后在事件列表上增加一个Bell对象，于是过一段事件后可以再次响铃。而Restart控制系统重启，一个有Event对象组成的数组被递交给Restart，该数组被加到控制器上，由于Restart本身也是一个Event所以同样可以加到Restart.action()中，以使系统有规律的重新启动自己。</p>
+</code></pre><p>Light 和 Thermostat 控制比较好理解，Bell控制响铃，然后在事件列表上增加一个Bell对象，于是过一段时间后可以再次响铃。而Restart控制系统重启，一个由Event对象组成的数组被递交给Restart，该数组被加到控制器上，由于Restart本身也是一个Event所以同样可以加到Restart.action()中，以使系统有规律的重新启动自己。</p>
 <p>下面的类通过创建GreenhouseControls对象，并添加各种不同的Event对象来配置该系统：</p>
 <pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GreenhouseController</span> </span>{
     <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> main(String[] args) {
@@ -413,7 +413,7 @@
         gc.run();
     }
 }
-</code></pre><p>这个类初始化系统，所以添加了所有响应的事件，Restart事件反复运行，且它每次都会将EventList加载到GreenhouseControls对象中。我们这时就会发现内部类的强大了，特别是在控制框架中，在Java GUI中内部类的作用体现的更为充分。</p>
+</code></pre><p>这个类初始化系统，所以添加了所有响应的事件，Restart事件反复运行，且它每次都会将EventList加载到GreenhouseControls对象中。我们这时就会发现内部类的强大了，特别是在控制框架中，例如在Java GUI中内部类的作用就体现的非常充分。</p>
 
       
     </div>
@@ -430,6 +430,8 @@
       
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/07/11/深入理解内部类（四）/">深入理解内部类（四）</a>
             
           </div>
 
@@ -503,7 +505,7 @@
         <div class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-count">7</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

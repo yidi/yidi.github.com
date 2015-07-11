@@ -160,6 +160,130 @@
           
           
             
+              <a class="post-title-link" href="/2015/07/11/深入理解内部类（四）/">
+                深入理解内部类（四）
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于 2015-07-11
+        </span>
+
+        
+          <span class="post-category">
+            &nbsp; | &nbsp; 分类于
+            
+              <a href="/categories/CoreJava/">CoreJava</a>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+            &nbsp; | &nbsp;
+            <a href="/2015/07/11/深入理解内部类（四）/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/11/深入理解内部类（四）/"></span>
+            </a>
+          </span>
+          
+        
+      </div>
+    </div>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <p>这是深入理解内部类系列的最后一篇博客了，这篇博客介绍的功能并不常用，但是确是为内部类的完备性而设计的。</p>
+<h2 id="内部类的继承">内部类的继承</h2><p>所谓内部类的继承就是指继承自一个内部类，继承类的构造器不能使用默认的构造器，因为其继承的内部类没法捕获对应的外部类对象，但是也不能简单的为继承类的构造器传递一个内部类对应外部类对象的引用，而必须使用特殊的语法：<code>enclosingClassReference.super()</code>。示例代码如下：</p>
+<pre><code>public <span class="class"><span class="keyword">class</span> <span class="title">WithInner</span> {</span>
+    <span class="class"><span class="keyword">class</span> <span class="title">Inner</span> {</span>
+    }
+}
+
+<span class="class"><span class="keyword">class</span> <span class="title">InheritInner</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">WithInner</span>.<span class="title">Inner</span> {</span>
+    <span class="comment">/*public InheritInner(){
+        // doesnt work
+    }*/</span>
+    <span class="comment">/*public InheritInner(WithInner withInner){
+    // doesnt work
+    }*/</span>
+    public <span class="type">InheritInner</span>(<span class="type">WithInner</span> withInner) {
+        withInner.<span class="keyword">super</span>();<span class="comment">//right</span>
+    }
+}
+</code></pre><h2 id="内部类是否可以被覆盖">内部类是否可以被覆盖</h2><p>内部类是可以被覆盖的，但是这里的覆盖是必须显示的继承，而不能像方法覆盖那样，如果子类有同名方法就默认覆盖父类方法。例如下面的代码输出结果是<code>OuterClass1.InnerClass</code> 而不是<code>OuterClass2.InnerClass.</code>这是因为每个内部类其实都是一个独立的个体，而不隶属于其外部类。</p>
+<pre><code>public <span class="class"><span class="keyword">class</span> <span class="title">InheritInnerClass</span> {</span>
+
+    public static void main(<span class="type">String</span>[] args) {
+        <span class="type">OuterClass1</span> c2 = <span class="keyword">new</span> <span class="type">OuterClass2</span>();
+    }
+}
+
+<span class="class"><span class="keyword">class</span> <span class="title">OuterClass1</span> {</span>
+    public <span class="type">OuterClass1</span>() {
+        <span class="keyword">new</span> <span class="type">InnerClass</span>();
+    }
+    <span class="class"><span class="keyword">class</span> <span class="title">InnerClass</span> {</span>
+        public <span class="type">InnerClass</span>() {
+            <span class="type">System</span>.out.println(<span class="string">"OuterClass1.InnerClass"</span>);
+        }
+    }
+}
+
+<span class="class"><span class="keyword">class</span> <span class="title">OuterClass2</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">OuterClass1</span> {</span>
+    <span class="class"><span class="keyword">class</span> <span class="title">InnerClass</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">OuterClass1</span>.<span class="title">InnerClass</span>{</span>
+        public <span class="type">InnerClass</span>() {
+            <span class="type">System</span>.out.println(<span class="string">"OuterClass2.InnerClass"</span>);
+        }
+    }
+}
+</code></pre><h2 id="局部内部类">局部内部类</h2><p>局部内部类和匿名内部类实现的功能一致，但是局部内部类可以重载构造器并创建不止一个该内部类的对象。</p>
+<h2 id="内部类标识符">内部类标识符</h2><p>内部类命名规则是如果内部类有名字，则其<code>.class</code>文件为<code>OuterClassName$InnerClassName.class</code><br>否则，如果是匿名内部类，则命名规则为<code>OuterClassName$1.class、OuterClassName$2.class</code>等。</p>
+<h2 id="总结">总结</h2><p>内部类和接口一样重要，但往往我们更多的时候会注重使用接口而忽略了内部类的掌握，使用内部类还是接口这一般是设计阶段需要考虑的事情，但是我们应该重视内部类的合理使用。</p>
+<p>最后，需要说明的是：本系列基于Java编程思想全书的章节设计安排和整理。</p>
+
+        
+      
+    </div>
+
+    <div class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </div>
+  </div>
+
+
+    
+      
+
+  <div class="post post-type-normal ">
+    <div class="post-header">
+
+      
+      
+        <h1 class="post-title">
+          
+          
+            
               <a class="post-title-link" href="/2015/07/08/深入理解内部类（三）/">
                 深入理解内部类（三）
               </a>
@@ -206,8 +330,8 @@
 
       
         
-          <h2 id="内部类的作用">内部类的作用</h2><p>以上我们已经谈论了很多内部类的知识，但是这些知识都知识语法和语义层面的，但是内部类真正的作用是什么呢？我们知道内部类可以操作其外部类的成员，也就是说内部类是进入外部类的一个窗口。</p>
-<p>如果知识通过内部类实现一个接口，那么其实这完全可以通过让外部类去实现就可以完成，确实，这样没错，如果只是实现一个接口外部类就可以满足，但是事实并不总是这样的，我们直到Java是单继承的，如果要继承多个(接口的)实现外部类就无能为力了，而内部类有效的实现了<strong>多重继承</strong>。每一个内部类都可以独立的继承一个实现，而不论其外部类是否继承了某个实现。</p>
+          <h2 id="内部类的作用">内部类的作用</h2><p>以上我们已经谈论了很多内部类的知识，但是这些知识都只是语法和语义层面的，但是内部类真正的作用是什么呢？我们知道内部类可以操作其外部类的成员，也就是说内部类是进入外部类的一个窗口。</p>
+<p>如果只是通过内部类实现一个接口，那么其实这完全可以通过让外部类去实现就可以完成，确实，这样没错，如果只是实现一个接口外部类就可以满足，但是事实并不总是这样的，我们知道Java是单继承的，如果要继承多个(接口的)实现外部类就无能为力了，而内部类有效的实现了<strong>多重继承</strong>。每一个内部类都可以独立的继承一个实现，而不论其外部类是否继承了某个实现。</p>
 <p>记住，内部类是一个独立的个体，同时外部类的每个内部类都可以以不同的方式实现同一个接口或继承同一个类，这样多重继承的场景就得到了完善。</p>
 <h3 id="闭包与回调">闭包与回调</h3><p>闭包是一个可调用的对象，它记录了一些信息，这些信息来自于创建它的作用域。通过这个定义可以看出内部类是面向对象的闭包。</p>
 <p>通过回调，对象能够携带一些信息，这些信息允许它在稍后的某个时刻调用初始的对象。<br>例如如下的代码：</p>
@@ -405,7 +529,7 @@
         }
     }
 }
-</code></pre><p>Light 和 Thermostat 控制比较好理解，Bell控制响铃，然后在事件列表上增加一个Bell对象，于是过一段事件后可以再次响铃。而Restart控制系统重启，一个有Event对象组成的数组被递交给Restart，该数组被加到控制器上，由于Restart本身也是一个Event所以同样可以加到Restart.action()中，以使系统有规律的重新启动自己。</p>
+</code></pre><p>Light 和 Thermostat 控制比较好理解，Bell控制响铃，然后在事件列表上增加一个Bell对象，于是过一段时间后可以再次响铃。而Restart控制系统重启，一个由Event对象组成的数组被递交给Restart，该数组被加到控制器上，由于Restart本身也是一个Event所以同样可以加到Restart.action()中，以使系统有规律的重新启动自己。</p>
 <p>下面的类通过创建GreenhouseControls对象，并添加各种不同的Event对象来配置该系统：</p>
 <pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">GreenhouseController</span> </span>{
     <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> main(String[] args) {
@@ -418,7 +542,7 @@
         gc.run();
     }
 }
-</code></pre><p>这个类初始化系统，所以添加了所有响应的事件，Restart事件反复运行，且它每次都会将EventList加载到GreenhouseControls对象中。我们这时就会发现内部类的强大了，特别是在控制框架中，在Java GUI中内部类的作用体现的更为充分。</p>
+</code></pre><p>这个类初始化系统，所以添加了所有响应的事件，Restart事件反复运行，且它每次都会将EventList加载到GreenhouseControls对象中。我们这时就会发现内部类的强大了，特别是在控制框架中，例如在Java GUI中内部类的作用就体现的非常充分。</p>
 
         
       
@@ -1257,7 +1381,7 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
         <div class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">6</span>
+              <span class="site-state-item-count">7</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
