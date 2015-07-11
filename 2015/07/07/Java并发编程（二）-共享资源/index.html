@@ -24,7 +24,7 @@
 
 
 
-  <meta name="keywords" content="Inner Class," />
+  <meta name="keywords" content="Java并发编程," />
 
 
 
@@ -47,7 +47,7 @@
 
 
 
-  <title> 深入理解内部类（四） // YIDI'S BLOG </title>
+  <title> Java并发编程（二）-共享资源 // YIDI'S BLOG </title>
 </head>
 
 <body>
@@ -158,7 +158,7 @@
           
           
             
-              深入理解内部类（四）
+              Java并发编程（二）-共享资源
             
           
         </h1>
@@ -166,7 +166,7 @@
 
       <div class="post-meta">
         <span class="post-time">
-          发表于 2015-07-11
+          发表于 2015-07-07
         </span>
 
         
@@ -186,8 +186,8 @@
           
             <span class="post-comments-count">
             &nbsp; | &nbsp;
-            <a href="/2015/07/11/深入理解内部类（四）/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/11/深入理解内部类（四）/"></span>
+            <a href="/2015/07/07/Java并发编程（二）-共享资源/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/07/Java并发编程（二）-共享资源/"></span>
             </a>
           </span>
           
@@ -201,54 +201,13 @@
       
 
       
-        <p>这是深入理解内部类系列的最后一篇博客了，这篇博客介绍的功能并不常用，但是确是为内部类的完备性而设计的。</p>
-<h2 id="内部类的继承">内部类的继承</h2><p>所谓内部类的继承就是指继承自一个内部类，继承类的构造器不能使用默认的构造器，因为其继承的内部类没法捕获对应的外部类对象，但是也不能简单的为继承类的构造器传递一个内部类对应外部类对象的引用，而必须使用特殊的语法：<code>enclosingClassReference.super()</code>。示例代码如下：</p>
-<pre><code>public <span class="class"><span class="keyword">class</span> <span class="title">WithInner</span> {</span>
-    <span class="class"><span class="keyword">class</span> <span class="title">Inner</span> {</span>
-    }
-}
-
-<span class="class"><span class="keyword">class</span> <span class="title">InheritInner</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">WithInner</span>.<span class="title">Inner</span> {</span>
-    <span class="comment">/*public InheritInner(){
-        // doesnt work
-    }*/</span>
-    <span class="comment">/*public InheritInner(WithInner withInner){
-    // doesnt work
-    }*/</span>
-    public <span class="type">InheritInner</span>(<span class="type">WithInner</span> withInner) {
-        withInner.<span class="keyword">super</span>();<span class="comment">//right</span>
-    }
-}
-</code></pre><h2 id="内部类是否可以被覆盖">内部类是否可以被覆盖</h2><p>内部类是可以被覆盖的，但是这里的覆盖是必须显示的继承，而不能像方法覆盖那样，如果子类有同名方法就默认覆盖父类方法。例如下面的代码输出结果是<code>OuterClass1.InnerClass</code> 而不是<code>OuterClass2.InnerClass.</code>这是因为每个内部类其实都是一个独立的个体，而不隶属于其外部类。</p>
-<pre><code>public <span class="class"><span class="keyword">class</span> <span class="title">InheritInnerClass</span> {</span>
-
-    public static void main(<span class="type">String</span>[] args) {
-        <span class="type">OuterClass1</span> c2 = <span class="keyword">new</span> <span class="type">OuterClass2</span>();
-    }
-}
-
-<span class="class"><span class="keyword">class</span> <span class="title">OuterClass1</span> {</span>
-    public <span class="type">OuterClass1</span>() {
-        <span class="keyword">new</span> <span class="type">InnerClass</span>();
-    }
-    <span class="class"><span class="keyword">class</span> <span class="title">InnerClass</span> {</span>
-        public <span class="type">InnerClass</span>() {
-            <span class="type">System</span>.out.println(<span class="string">"OuterClass1.InnerClass"</span>);
-        }
-    }
-}
-
-<span class="class"><span class="keyword">class</span> <span class="title">OuterClass2</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">OuterClass1</span> {</span>
-    <span class="class"><span class="keyword">class</span> <span class="title">InnerClass</span> <span class="keyword"><span class="keyword">extends</span></span> <span class="title">OuterClass1</span>.<span class="title">InnerClass</span>{</span>
-        public <span class="type">InnerClass</span>() {
-            <span class="type">System</span>.out.println(<span class="string">"OuterClass2.InnerClass"</span>);
-        }
-    }
-}
-</code></pre><h2 id="局部内部类">局部内部类</h2><p>局部内部类和匿名内部类实现的功能一致，但是局部内部类可以重载构造器并创建不止一个该内部类的对象。</p>
-<h2 id="内部类标识符">内部类标识符</h2><p>内部类命名规则是如果内部类有名字，则其<code>.class</code>文件为<code>OuterClassName$InnerClassName.class</code><br>否则，如果是匿名内部类，则命名规则为<code>OuterClassName$1.class、OuterClassName$2.class</code>等。</p>
-<h2 id="总结">总结</h2><p>内部类和接口一样重要，但往往我们更多的时候会注重使用接口而忽略了内部类的掌握，使用内部类还是接口这一般是设计阶段需要考虑的事情，但是我们应该重视内部类的合理使用。</p>
-<p>最后，需要说明的是：本系列基于Java编程思想全书的章节设计安排和整理。</p>
+        <p>这篇简单介绍线程资源共享即同步问题。</p>
+<p>多线程各自运行，你就无法确定一个线程何时在运行，当前哪个线程在运行。这在对<strong>临界资源</strong>访问时就肯定会出现问题，假设如果两个线程试图同时获取一个相同的资源的时候，如果不加以控制，就可能至少有其中一个线程访问到状态不正确的资源，因此使用线程时一个重要的工作就是进行线程的同步。基本上并发模式在解决线程冲突问题的时候基本上都是采用序列化访问共享资源的方案，不同的场景有具体的不同处理方式。</p>
+<h2 id="1-Synchronized_&amp;_Lock">1.Synchronized &amp; Lock</h2><p>Java中通过synchronized 关键字为资源冲突提供了内置支持，当任务要执行被synchronized 保护的代码时，会<strong>先检查锁是否可用，之后获取锁，然后执行代码，最后释放锁</strong>。<br>所有的共享资源一般是以对象的形式存在内存片段中，但也可以是文件，IO端口，打印机等。要控制对共享资源的访问，先要将其包装进一个对象，然后把所有要访问这个资源的方法标记为synchronized。如<strong>果某个任务处于对标记为synchronized 的方法的调用中，那么在这个任务从该方法返回前，其他所有要调用该被标记为synchronized 的方法的任务都会被阻塞</strong>。<br>所有对象都自动含有单一的锁，当<strong>一个任务</strong>在对象上调用其任意的synchronized 方法时，此对象都被加锁。这时<strong>其他任何任务</strong>要调用该对象上其他的synchronized 方法只有等到前一个synchronized 方法调用完毕并释放了锁之后才能被调用。<br>一个任务可以多次获得对象的锁，如果该任务已经获得当前对象的锁，那么它在调用了该对象的synchronized 方法后，如果该方法需要继续调用对象的另一个synchronized 方法是可以的，JVM负责跟踪和维护对象被加锁的次数，如果对象被第一次加锁，则计数器为1，下一次加锁计数器为2，直到完全释放，计数器变为0，此时其他任务就可以调用对象的synchronized 方法了，但是在计数器不为0的时候，只有当前已经获取到锁的任务可以调用对象的synchronized 方法。<br>针对每一个类，也有一个锁 。synchronized static 可以保证在类的范围内防止对static数据的并发访问。<br>如果在类中有超过一个方法在处理临界资源，那必须同步所有处理这些资源的相关方法，否则并发就不能正常工作。<br> 除了使用synchronized 之外，还可以使用Lock进行显示的加锁操作，显示的加锁比synchronized 更灵活，具有更细粒度的操作，可以在锁失败时可以做一些清理工作，显示的锁操作必须使用try catch finally语句，并且数据返回必须在try语句块中，以确保unlock()不会过早发声，将数据暴露给其他任务，而且必须有finally语句块，在其中处理unlock()操作。显示的加锁操作比synchronized赋予了更灵活的特性，但是维护起来比synchronized 跟复杂，代码也更更容易出错，但是由于显示加锁允许做更多的控制，因此适用范围更广。</p>
+<h2 id="2-Volatile">2.Volatile</h2><p>在Java中<strong>不能依赖原子性就不使用同步</strong>，volatile关键字修饰属性主要是为了<strong>保证可视性但不保证互斥</strong>，因为一般情况下，线程对域的修改即使是不中断的原子操作，对其他任务也可能是不可见的，因为此时的修改可能只是暂时性的存储在线程的本地处理器的缓存中（不强制必须刷到主存中），不同任务对应用有不同的视图，volatile 保证了如果一个域一旦发生了写操作，就强制将修改立即写入主存中，这样就保证了修改的可视性。<br>当一个域的值依赖于它之前的值或者一个域的值依赖其他域的值，那么volatile就无法正常工作了，使用volatile而不是使用synchronized唯一安全的情况是类中只有一个可变的域。第一选择是使用synchronized而不是有风险的volatile。同一个变量线程之间的可见性和线程中相互操作的互斥性是两件事情。操作互斥是提供了操作整体的原子性，千万不能混淆。</p>
+<h2 id="3-Atomic">3.Atomic</h2><p>在concurrent包中，实现了多个特殊的元自行变量类型，对这些类型使用原子性操作不需要使用synchronized等同步机制而可以保证正确性。Atomic类型性能比使用同步更好，JDK是通过JNI的方式使用了硬件支持的CAS指令，一般的我们更倾向于使用synchronized或者Lock等方式，而避免可能的安全性问题，除非有特别的性能要求。</p>
+<h2 id="4-临界区">4.临界区</h2><p>有时候，你并不需要对整个方法进行同步，而只需要对方法中的部分临界资源进行同步，通过这种方式分离出来的代码段被称为临界区，它也可以使用synchronized建立，此时需要在synchronized中指定一个对象，表示此对象的锁被用来对括号内的代码进行同步控制，这段代码就称为临界区，也即同步控制块，在进入这段代码前必须获取同步对象的锁，否则只能等待，通过使用同步控制块而不是使用整个方法的同步控制。可以使多个任务访问对象的时间性能得到显著提高。<br>synchronized块一般的用法是在当前对象上加锁，即synchronized(this)，此时其他任务就不能对该对象的所有其他synchronized进行调用了。但是如果当前对象的不同的synchronized 块加锁的对象是不一样的，则加锁对象不一样的同步控制块彼此不是互斥的，也即一个任务在访问该对象的synchronized(Object1)同步控制块时，另一个任务也可以同时访问该对象的另一个同步控制块synchronized(Obeject2).<br>如果需要对一个非线程安全的类进行线程安全的操作，我们可以创建一个该类的Manager类，通过在该Manager类中的同步方法访问该类从而实现非线程安全的类的线程安全的访问。 </p>
+<h2 id="5-线程本地存储">5.线程本地存储</h2><p>为了对每个线程都创建变量的本地存储，可以使用concurrent.ThreadLocal类，这样每个线程都会创建自己线程的本地存储变量，线程之间不共享该变量，也就不需要同步控制了。例如：TreadLocal<integer> 。</integer></p>
 
       
     </div>
@@ -257,7 +216,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Inner-Class/"> #Inner Class </a>
+            <a href="/tags/Java并发编程/"> #Java并发编程 </a>
           
         </div>
       
@@ -266,13 +225,13 @@
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2015/07/11/Java并发编程（三）-中断/">Java并发编程（三）-中断</a>
+              <a href="/2015/07/07/深入理解内部类（二）/">深入理解内部类（二）</a>
             
           </div>
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2015/07/08/深入理解内部类（三）/">深入理解内部类（三）</a>
+              <a href="/2015/07/05/Java并发编程（一）-并发基础/">Java并发编程(一)-并发基础</a>
             
           </div>
         </div>
@@ -292,8 +251,8 @@
     
       <div class="comments" id="comments">
         
-          <div class="ds-thread" data-thread-key="2015/07/11/深入理解内部类（四）/"
-               data-title="深入理解内部类（四）" data-url="http://yoursite.com/2015/07/11/深入理解内部类（四）/">
+          <div class="ds-thread" data-thread-key="2015/07/07/Java并发编程（二）-共享资源/"
+               data-title="Java并发编程（二）-共享资源" data-url="http://yoursite.com/2015/07/07/Java并发编程（二）-共享资源/">
           </div>
         
       </div>
@@ -399,7 +358,7 @@
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#内部类的继承"><span class="nav-number">1.</span> <span class="nav-text">内部类的继承</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内部类是否可以被覆盖"><span class="nav-number">2.</span> <span class="nav-text">内部类是否可以被覆盖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#局部内部类"><span class="nav-number">3.</span> <span class="nav-text">局部内部类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内部类标识符"><span class="nav-number">4.</span> <span class="nav-text">内部类标识符</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Synchronized_&_Lock"><span class="nav-number">1.</span> <span class="nav-text">1.Synchronized & Lock</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Volatile"><span class="nav-number">2.</span> <span class="nav-text">2.Volatile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Atomic"><span class="nav-number">3.</span> <span class="nav-text">3.Atomic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-临界区"><span class="nav-number">4.</span> <span class="nav-text">4.临界区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-线程本地存储"><span class="nav-number">5.</span> <span class="nav-text">5.线程本地存储</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>

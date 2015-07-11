@@ -160,6 +160,126 @@
           
           
             
+              <a class="post-title-link" href="/2015/07/11/Java并发编程（三）-中断/">
+                Java并发编程（三）-中断
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于 2015-07-11
+        </span>
+
+        
+          <span class="post-category">
+            &nbsp; | &nbsp; 分类于
+            
+              <a href="/categories/CoreJava/">CoreJava</a>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+            &nbsp; | &nbsp;
+            <a href="/2015/07/11/Java并发编程（三）-中断/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/11/Java并发编程（三）-中断/"></span>
+            </a>
+          </span>
+          
+        
+      </div>
+    </div>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <h2 id="中断">中断</h2><p>线程有四种状态：<strong>新建</strong>，<strong>就绪</strong>，<strong>阻塞</strong>，<strong>死亡</strong>，一个线程在以下四种情况下可以进入阻塞状态：</p>
+<p>1.调用sleep()进入休眠<br>2.调用wait()进行挂起<br>3.等待IO<br>4.调用同步控制块，但不可获得锁。</p>
+<p>在线程上调用interrupt()时，中断发生的唯一时刻就是任务要进入阻塞操作中，或者已经在阻塞操作内部时。如果这时调用interrupt()就会抛出InterruptedException.异常。如果只能通过依赖抛出异常而退出run()方法的话，我们并不能总是成功离开run()方法，因为如果此时碰巧run()没有产生阻塞，就不会抛出异常，也就不会退出run().</p>
+<p>那么就需要第二种退出run()方法的方式，这种方式就是判断任务的中断状态，其状态可以通过interrupt()设置，然后通过调用interrupted()方法获取中断状态，interrupted()<strong>不仅会获取中断状态，还会清除中断状态</strong>（将其复位为false）。Thread.interrupted()提供了不抛出异常而离开run()的方式。下面分别是依赖线程当前已经阻塞并抛出异常来退出run()方法的例子和不依赖当前线程是否阻塞和是否抛出异常来退出run()方法的例子。</p>
+<pre><code><span class="keyword">import</span> java.util.concurrent.TimeUnit;
+<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TerminateTest</span> </span>{
+    <span class="comment">//通过interrupted()退出run()方法</span>
+    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyRunnable1</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>{
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
+            <span class="keyword">while</span>(!Thread.interrupted())
+                System.out.println(<span class="string">"MyRunnable1 RUNNING..."</span>);
+            System.out.println(<span class="string">" MyRunnable1 RUN FINISHED.."</span>);
+        }
+    }
+    <span class="comment">//通过阻塞时通过使其抛出异常退出run()方法</span>
+    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyRunnable2</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>{
+        <span class="annotation">@Override</span>
+        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
+            <span class="keyword">while</span>(<span class="keyword">true</span>){
+                System.out.println(<span class="string">"MyRunnable2 RUNNING..."</span>);
+                <span class="keyword">try</span> {
+                    TimeUnit.SECONDS.sleep(<span class="number">3</span>);
+                } <span class="keyword">catch</span> (InterruptedException e) {
+                    System.out.println(<span class="string">"MyRunnable2 RUN FINISHED.."</span>);
+                    <span class="keyword">break</span>;
+                }
+            }
+        }
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{
+        Thread t1 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> MyRunnable1());
+        t1.start();
+        t1.interrupt();
+        System.out.println(<span class="string">"T1.ISINTERRUPTED:"</span>+ t1.isInterrupted());
+
+        Thread t2 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> MyRunnable2());
+        t2.start();
+        t2.interrupt();
+        System.out.println(<span class="string">"T2.ISINTERRUPTED:"</span>+ t2.isInterrupted());
+    }
+}
+</code></pre><p>需要说明的是interrupted()方法会清除中断状态使其复位,而isInterrupted()方法只判断当前中断状态，并不复位状态。其实isInterrupted调用了本地方法isInterrupted(boolean ClearInterrupted)并传了参数为false。</p>
+
+        
+      
+    </div>
+
+    <div class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </div>
+  </div>
+
+
+    
+      
+
+  <div class="post post-type-normal ">
+    <div class="post-header">
+
+      
+      
+        <h1 class="post-title">
+          
+          
+            
               <a class="post-title-link" href="/2015/07/11/深入理解内部类（四）/">
                 深入理解内部类（四）
               </a>
@@ -780,8 +900,8 @@
           
           
             
-              <a class="post-title-link" href="/2015/07/07/Java并发编程（二）/">
-                Java并发编程（二）
+              <a class="post-title-link" href="/2015/07/07/Java并发编程（二）-共享资源/">
+                Java并发编程（二）-共享资源
               </a>
             
           
@@ -810,8 +930,8 @@
           
             <span class="post-comments-count">
             &nbsp; | &nbsp;
-            <a href="/2015/07/07/Java并发编程（二）/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/07/Java并发编程（二）/"></span>
+            <a href="/2015/07/07/Java并发编程（二）-共享资源/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/07/Java并发编程（二）-共享资源/"></span>
             </a>
           </span>
           
@@ -863,8 +983,8 @@
           
           
             
-              <a class="post-title-link" href="/2015/07/05/Java并发编程（一）/">
-                Java并发编程（一）
+              <a class="post-title-link" href="/2015/07/05/Java并发编程（一）-并发基础/">
+                Java并发编程(一)-并发基础
               </a>
             
           
@@ -893,8 +1013,8 @@
           
             <span class="post-comments-count">
             &nbsp; | &nbsp;
-            <a href="/2015/07/05/Java并发编程（一）/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/05/Java并发编程（一）/"></span>
+            <a href="/2015/07/05/Java并发编程（一）-并发基础/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/05/Java并发编程（一）-并发基础/"></span>
             </a>
           </span>
           
@@ -1381,7 +1501,7 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
         <div class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">7</span>
+              <span class="site-state-item-count">8</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
