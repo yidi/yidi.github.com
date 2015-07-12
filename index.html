@@ -160,6 +160,348 @@
           
           
             
+              <a class="post-title-link" href="/2015/07/12/Java并发编程（四）-线程协作/">
+                Java并发编程(四)-线程协作
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于 2015-07-12
+        </span>
+
+        
+          <span class="post-category">
+            &nbsp; | &nbsp; 分类于
+            
+              <a href="/categories/CoreJava/">CoreJava</a>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+            &nbsp; | &nbsp;
+            <a href="/2015/07/12/Java并发编程（四）-线程协作/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/12/Java并发编程（四）-线程协作/"></span>
+            </a>
+          </span>
+          
+        
+      </div>
+    </div>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <p>在前面我们通过互斥量同步多个任务的行为，从而保证一个任务不会被另一个任务干扰，通过互斥可以保证在任何时候只有一个任务在访问共享资源。在并发任务中，更重要的是任务之间的协作，使得多个任务可以协作共同解决一个问题。任务之间并不是彼此干涉的，而是彼此协调的，这些任务有先后顺序和依赖，也有可以并行执行的。任务的协作还是依靠基本的基础特性：互斥。并在此基础之上添加了一种途径，任务可以在一定条件下将自身挂起，直到外部条件变化可使当前任务继续向前执行为止。</p>
+<h2 id="1-wait()、notify()">1.wait()、notify()</h2><p>在线程上调用wait()方法表示当前线程已经完成了所能做的事情，需要在此等待，wait()操作会将当前线程挂起，并释放锁，这样其他线程就可以访问该锁上的其他synchronized锁资源了。（wait()操作是释放锁的，而sleep()和yield()并不释放锁）.wait()操作等待某个条件发生变化，而改变这个条件超出了当前方法的控制能力。通常这个条件需要另一个任务来改变。wait()可以接受一个超时参数也可以无参数表示一直等待下去。直到另一个任务通过notify()或者notifyAll()将其唤醒。</p>
+<p>注：只能在同步控制块中使用wait()/notify()/notifyAll()等操作，因为如果不是在同步控制块中调用，虽然能通过编译，但是在运行时会抛出IllegalMonitorStateException异常。表示任务在调用这些方式前必须拥有（获得）锁。不存在锁的话也就不存在这些操作了。</p>
+<p>notify()或者notifyAll会唤醒等待该对象的锁的其他任务，但是不同的任务可能是由于不同的原因产生等待的，因此有可能被唤醒的任务此时其等待的条件并没有满足，因此需要在继续向前执行前判断下其感兴趣的条件是否发生，如果发生才向前执行，否则继续等待，一般情况下惯用的方式是通过while循环去编写这样的代码。例如有两个线程在等待同一个对象的锁，但是等待的条件并不相同，第三个线程通过调用notifyAll()将这两个线程同时唤醒，但是只有其中一个线程的条件满足可以继续向前执行，另一个线程检测到当前唤醒时条件依旧不满足(此线程由于不正确的原因被唤醒)，则因继续调用wait()进行等待。</p>
+<p>在JDK5中还可以通过在Condition 上调用await()来挂起任务，调用signal()/signalAll()来实现通知任务可以继续执行，用法和wait()/notify()/notifyAll()类似。使用时需要显示的使用Lock和Condition对象。现在，实际项目中更多的是使用Condition/Lock组合而很少使用wait()/notify()/Synchronized了。</p>
+<pre><code><span class="operator"><span class="keyword">Lock</span> <span class="keyword">lock</span> = new Reentrantlock();</span>
+Condition condition = <span class="operator"><span class="keyword">lock</span>.newCondition();</span>
+</code></pre><h2 id="2-丢失的信号">2.丢失的信号</h2><p>当两个线程通过wait()和notify()/notifyAll()进行协作时，可能会错过某个信号，如下所示：T1是通知T2的线程，而这两个线程（有缺陷）的实现如下：</p>
+<pre><code>T1：
+    <span class="keyword">synchronized</span>(<span class="keyword">this</span>){
+        &lt;setup condition <span class="keyword">for</span> T2&gt;
+        notify();
+    }
+T2:
+    <span class="keyword">while</span>(some condition){
+        <span class="comment">//Point1</span>
+        Synchronized{
+            wait();
+        }
+    }
+</code></pre><p><code>&lt;setup condition for T2&gt;</code>是防止T2进行wait()的一个动作，前提是T2还没有调用wait()操作。假设T2判断<code>some condition</code>为true就会进入while循环体。此时在Point1处线程调度器被切换到执行T1，然后T1调用notify()，此时对于T2来说条件已经发生了变化，即<code>some condition</code>求值结果可能已经为false，不应进行wait(),而此时对于T2来说已经太晚了，不能意识到这个条件已经发生了变化，因此会盲目进入wait()。从而错过这个notify()，而T2也就会无限的等待这个已经发送过的信号，从而产生死锁。</p>
+<p>该问题的解决方式是防止在some condition条件上产生竞争条件，下面是T2正确的执行方式(双检查锁)：</p>
+<pre><code>T2:
+    <span class="keyword">while</span>(some <span class="keyword">condition</span>){
+        <span class="comment">//Point1</span>
+        Synchronized{
+          <span class="keyword">while</span>(some <span class="keyword">condition</span>)
+            wait();
+        }
+    }
+</code></pre><p>注：使用notifyAll()比使用notify()更安全，但是使用notify()是一种优化，为了使用notify()必须保证：1.所有的任务都是等待相同的条件，否则就不能保证是否唤醒了正确的任务。2.当条件发生变化时，必须只有一个任务受益。3.这些限制对所有可能的子类也必须同样起作用。notifyAll()唤醒所有因等待同一个特定锁而被阻塞的所有任务，而不是唤醒所有正在等待的阻塞任务。</p>
+<h2 id="3-生产者与消费者">3.生产者与消费者</h2><p>生产者消费者问题是经典的线程协作场景，只有当生产者生产出产品后消费者才可以消费产品，一般的生产者和消费者分别是不同的任务，其中的产品通过一个共享的队列或者其他形式的方式实现，生产者和消费者需要在这个共享的产品结构上进行同步以实现生产者消费者模型。</p>
+<p>例如在一个餐馆中，厨师代表生产者用来生产食物，服务员代表消费者用来将厨师做的食物端给客户消费。餐馆一开始营业厨师就和服务员开始各司其职，代码如下：</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Restaurant</span> {
+    <span class="keyword">private</span> Meal meal;
+    <span class="keyword">private</span> ExecutorService  exec = <span class="keyword">null</span>;
+    <span class="keyword">private</span> WaitPerson waitPerson =<span class="keyword">null</span>;
+    <span class="keyword">private</span> Chief chef =<span class="keyword">null</span>;
+    <span class="function"><span class="keyword">public</span> <span class="title">Restaurant</span>(<span class="params"></span>)</span>{
+        waitPerson = <span class="keyword">new</span> WaitPerson(<span class="keyword">this</span>);
+        chef = <span class="keyword">new</span> Chief(<span class="keyword">this</span>);
+        exec = Executors.newCachedThreadPool();
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">open</span>(<span class="params"></span>)</span>{
+        exec.execute(waitPerson);
+        exec.execute(chef);
+    }
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span>(<span class="params">String[] args</span>) </span>{
+        Restaurant restaurant = <span class="keyword">new</span> Restaurant();
+        restaurant.open();
+    }
+}
+</code></pre><p>new Restaurant()表示创建餐馆，其中有厨师Chief和服务员WaitPerson，还有饭菜Meal exec表示执行餐馆业务的基本条件。调用open()方法表示餐馆开始营业即厨师和服务员开始忙碌，各司其职。其中厨师chief和服务员waitPerson都是实现了Runnable接口的可运行的任务。其中饭菜就是厨师和服务员需要协作的工作，其实现如下：</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">Meal</span></span>{
+    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> orderNumber;
+    <span class="function"><span class="keyword">public</span> <span class="title">Meal</span><span class="params">(<span class="keyword">int</span> orderNumber)</span></span>{
+        <span class="keyword">this</span>.orderNumber = orderNumber;
+    }
+    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span></span>{
+        <span class="keyword">return</span> <span class="string">"Meal"</span> + orderNumber;
+    }
+}
+</code></pre><p>厨师和服务员被设计为可执行任务，分别执行具体的动作，厨师只有在当前Meal为空的时候开始做饭，服务员在厨师做饭的时候等待，厨师做好饭后通知服务员取餐，在服务员将饭菜取走之前厨师将等待，直到服务员将饭菜取走并通知其继续做饭厨师再开始做饭。服务员和厨师的实现代码如下：</p>
+<pre><code><span class="keyword">class</span> WaitPerson <span class="keyword">implements</span> Runnable{
+    <span class="keyword">private</span> Restaurant r;
+    <span class="keyword">public</span> WaitPerson(Restaurant r){
+        <span class="keyword">this</span>.r = r;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> run(){
+        <span class="keyword">try</span>{
+            <span class="keyword">while</span>(!Thread.interrupted()){
+                <span class="keyword">synchronized</span>(<span class="keyword">this</span>){
+                    <span class="keyword">while</span>(r.meal == <span class="keyword">null</span>){
+                        wait();
+                    }
+                }
+                System.out.<span class="keyword">println</span>(<span class="string">"Waitperson got "</span> + r.meal);
+                <span class="keyword">synchronized</span>(r.chef){
+                    r.meal = <span class="keyword">null</span>;
+                    r.chef.notifyAll();
+                }
+            }
+        }<span class="keyword">catch</span>(InterruptedException e){
+            System.out.<span class="keyword">println</span>(<span class="string">"WaitPerson interrupted!"</span>);
+        }
+    }
+}
+
+<span class="keyword">class</span> Chief <span class="keyword">implements</span> Runnable{
+    <span class="keyword">private</span> Restaurant restaurant;
+    <span class="keyword">private</span> <span class="keyword">int</span> <span class="keyword">count</span> = <span class="number">0</span>;
+    <span class="keyword">public</span> Chief(Restaurant r){
+        <span class="keyword">this</span>.restaurant = r;
+    }
+    <span class="keyword">public</span> <span class="keyword">void</span> run(){
+        <span class="keyword">try</span>{
+            <span class="keyword">while</span>(!Thread.interrupted()){
+                <span class="keyword">synchronized</span>(<span class="keyword">this</span>){
+                    <span class="keyword">while</span>(restaurant.meal != <span class="keyword">null</span>){
+                        wait();
+                    }
+                }
+                <span class="keyword">if</span>(++<span class="keyword">count</span> == <span class="number">10</span>){
+                    System.out.<span class="keyword">println</span>(<span class="string">"Out of food. Closing"</span>);
+                    restaurant.exec.shutdownNow();
+                }
+                System.out.<span class="keyword">println</span>(<span class="string">"Order up!"</span>);
+                <span class="keyword">synchronized</span>(restaurant.waitPerson){
+                    restaurant.meal = <span class="keyword">new</span> Meal(<span class="keyword">count</span>);
+                    restaurant.waitPerson.notifyAll();
+                }
+                TimeUnit.SECONDS.sleep(<span class="number">1</span>);
+            }
+        }<span class="keyword">catch</span>(InterruptedException e){
+            System.out.<span class="keyword">println</span>(<span class="string">"Chef interrupted!"</span>);
+        }
+    }
+}
+</code></pre><p>可以看到厨师在检测是否需要做饭的时候要在其自身对象上同步，以保证做饭的互斥性，即在做饭的时候服务员不会过来取餐。在具体做饭的时候需先获取waitPerson对象上的锁，这样在做好饭之后就可以通过notifyAll通知waitPerson取餐了。服务员对应的逻辑与厨师相同。</p>
+<p>wait()/notify()以低级的方式解决了任务协作问题，每次任务交互都需要握手，这样虽然可能更好的理解任务同步的具体执行过程，但是却陷入了复杂的具体的代码实现上，而且这种控制起来也更加困难，一旦业务规则复杂起来，类和类之间的耦合性就会非常复杂，就很容易出问题。</p>
+<p>其实在Java并发包中可以使用同步队列来解决任务协作问题，同步队列任何时候都只允许有一个任务进行插入或移除元素。当消费者任务试图从队列中获取元素，而队列为空时，这些队列可以自动挂起消费者任务。并等到有的元素可用时恢复消费者任务。同步队列比起wait()/notify()简单并可靠的多。在java.util.concurrent,BlockingQueue提供了这个接口，并且有大量的标准实现。例如：<br>LinkedBlockingQueue,ArrayBlockingQueue,SynchronousQueue等。使用BlockingQueue可以极大的简化程序的实现，因为队列的阻塞，使得处理过程被自动的挂起和恢复，而不用显示的调用wait()/notify()，每个类只和它自己的BlockingQueue通信，因此类和类之间的耦合性也被消除了。下面看一个使用同步队列实现生产者与消费者任务的示例，其中土司面包有三道工序，依次为做土司，抹黄油，涂果酱，并且只有在这三道工序完成之后才可以吃。完整代码如下：</p>
+<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ToastOMatic</span> </span>{
+    <span class="keyword">private</span> ToastQueue dryQueue,butteredQueue,finishedQueue;
+    ExecutorService exec;
+    <span class="keyword">public</span> <span class="keyword">enum</span> Status {
+        DRY, BUTTERED, JAMMED
+    }
+    <span class="function"><span class="keyword">public</span> <span class="title">ToastOMatic</span><span class="params">()</span></span>{
+        <span class="keyword">this</span>.dryQueue = <span class="keyword">new</span> ToastQueue();
+        <span class="keyword">this</span>.butteredQueue = <span class="keyword">new</span> ToastQueue();
+        <span class="keyword">this</span>.finishedQueue = <span class="keyword">new</span> ToastQueue();
+        <span class="keyword">this</span>.exec = Executors.newCachedThreadPool();
+    }
+
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">begin</span><span class="params">()</span></span>{
+        exec.execute(<span class="keyword">new</span> Toaster(dryQueue));
+        exec.execute(<span class="keyword">new</span> Butterer(dryQueue,butteredQueue));
+        exec.execute(<span class="keyword">new</span> Jammer(butteredQueue,finishedQueue));
+        exec.execute(<span class="keyword">new</span> Eater(finishedQueue));
+
+    }
+    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>{
+        ToastOMatic matic = <span class="keyword">new</span> ToastOMatic();
+        matic.begin();
+        TimeUnit.SECONDS.sleep(<span class="number">5</span>);
+        matic.exec.shutdownNow();
+        System.out.println(matic.dryQueue.size());
+        System.out.println(matic.butteredQueue.size());
+        System.out.println(matic.finishedQueue.size());
+    }
+}
+
+<span class="class"><span class="keyword">class</span> <span class="title">Toast</span> </span>{
+    <span class="keyword">private</span> Status status = Status.DRY;
+    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> id;
+    <span class="function"><span class="keyword">public</span> <span class="title">Toast</span><span class="params">(<span class="keyword">int</span> id)</span> </span>{<span class="keyword">this</span>.id = id;}
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">butter</span><span class="params">()</span> </span>{<span class="keyword">this</span>.status = Status.BUTTERED;}
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">jam</span><span class="params">()</span> </span>{<span class="keyword">this</span>.status = Status.JAMMED;}
+    <span class="function"><span class="keyword">public</span> Status <span class="title">getStatus</span><span class="params">()</span> </span>{    <span class="keyword">return</span> <span class="keyword">this</span>.status;}
+    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getId</span><span class="params">()</span> </span>{<span class="keyword">return</span> <span class="keyword">this</span>.id;}
+    <span class="function"><span class="keyword">public</span> String <span class="title">toString</span><span class="params">()</span> </span>{<span class="keyword">return</span> <span class="string">"Toast"</span> + id + <span class="string">":"</span> + status;}
+}
+
+<span class="class"><span class="keyword">class</span> <span class="title">ToastQueue</span> <span class="keyword">extends</span> <span class="title">LinkedBlockingQueue</span>&lt;<span class="title">Toast</span>&gt;</span>{
+    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> serialVersionUID = <span class="number">1L</span>;
+}
+
+<span class="class"><span class="keyword">class</span> <span class="title">Toaster</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>{
+    <span class="keyword">private</span> ToastQueue toastQueue;
+    <span class="keyword">private</span> <span class="keyword">int</span> count = <span class="number">0</span>;
+    <span class="function"><span class="keyword">public</span> <span class="title">Toaster</span><span class="params">(ToastQueue tq)</span></span>{
+        <span class="keyword">this</span>.toastQueue = tq;
+    }
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
+        <span class="keyword">try</span>{
+            <span class="keyword">while</span>(!Thread.interrupted()){
+                Toast t = <span class="keyword">new</span> Toast(count++);
+                System.out.println(t);
+                toastQueue.put(t);
+                TimeUnit.MILLISECONDS.sleep(<span class="number">100</span>);
+            }
+        }<span class="keyword">catch</span>(InterruptedException e){
+            System.out.println(<span class="string">"Toaster Interrupted!"</span>);
+        }
+        System.out.println(<span class="string">"Toaster off!"</span>);
+    }
+
+}
+
+<span class="class"><span class="keyword">class</span> <span class="title">Butterer</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>{
+    <span class="keyword">private</span> ToastQueue dryQueue,butteredQueue;
+    <span class="function"><span class="keyword">public</span> <span class="title">Butterer</span><span class="params">(ToastQueue dry,ToastQueue buttered)</span></span>{
+        <span class="keyword">this</span>.dryQueue = dry;
+        <span class="keyword">this</span>.butteredQueue = buttered;
+    }
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
+        <span class="keyword">try</span>{
+            <span class="keyword">while</span>(!Thread.interrupted()){
+                Toast t = dryQueue.take();
+                t.butter();
+                System.out.println(t);
+                butteredQueue.put(t);
+                TimeUnit.MILLISECONDS.sleep(<span class="number">100</span>);
+            }
+        }<span class="keyword">catch</span>(InterruptedException e){
+            System.out.println(<span class="string">"Butterer Interrupted!"</span>);
+        }
+        System.out.println(<span class="string">"Butterer off!"</span>);
+    }
+
+}
+
+<span class="class"><span class="keyword">class</span> <span class="title">Jammer</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>{
+    <span class="keyword">private</span> ToastQueue butteredQueue,jammedQueue;
+    <span class="function"><span class="keyword">public</span> <span class="title">Jammer</span><span class="params">(ToastQueue buttered,ToastQueue jammed)</span></span>{
+        <span class="keyword">this</span>.butteredQueue = buttered;
+        <span class="keyword">this</span>.jammedQueue = jammed;
+    }
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
+        <span class="keyword">try</span>{
+            <span class="keyword">while</span>(!Thread.interrupted()){
+                Toast t = butteredQueue.take();
+                t.jam();
+                System.out.println(t);
+                jammedQueue.put(t);
+                TimeUnit.MILLISECONDS.sleep(<span class="number">100</span>);
+            }
+        }<span class="keyword">catch</span>(InterruptedException e){
+            System.out.println(<span class="string">"Jammer Interrupted!"</span>);
+        }
+        System.out.println(<span class="string">"Jammer off!"</span>);
+    }
+
+}
+
+<span class="class"><span class="keyword">class</span> <span class="title">Eater</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>{
+    <span class="keyword">private</span> ToastQueue finishedQueue;
+    <span class="keyword">private</span> <span class="keyword">int</span> counter = <span class="number">0</span>;
+    <span class="function"><span class="keyword">public</span> <span class="title">Eater</span><span class="params">(ToastQueue finished)</span></span>{
+        <span class="keyword">this</span>.finishedQueue = finished;
+    }
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
+        <span class="keyword">try</span>{
+            <span class="keyword">while</span>(!Thread.interrupted()){
+                Toast t = finishedQueue.take();
+                TimeUnit.MILLISECONDS.sleep(<span class="number">100</span>);
+                <span class="keyword">if</span>(t.getId() != counter++ || t.getStatus() !=                                           Status.JAMMED){
+                    System.out.println(<span class="string">"ERROR:"</span> + t);
+                    System.exit(<span class="number">1</span>);
+                }<span class="keyword">else</span>{
+                    System.out.println(<span class="string">"Comp!"</span> + t);
+                }
+            }
+        }<span class="keyword">catch</span>(InterruptedException e){
+            System.out.println(<span class="string">"Eater Interrupted!"</span>);
+        }
+        System.out.println(<span class="string">"Eater off!"</span>);
+    }
+
+}
+</code></pre><p>线程协作是多线程编程的重要方面。截至目前的四篇都是并发编程的基础，实际的并发编程更为复杂，比如，上述提到的生产者消费者之间都是顺序的处理过程，而实际的场景更可能是部分并行进行，只有在关键路径才需要同步；同样的上述的场景中，每个阶段都只对应一个生产者或者一个消费者，可现实情况是一般的会有多个生产者同时进行生产，多个消费者同时进行消费。这种场景随处可见，只要是真实发生的工程都具有这样的属性。这些才是并发编程的核心点，接下来的几篇博客是并发编程的进阶内容，当然这些内容都是基于以上基础内容而来的。</p>
+
+        
+      
+    </div>
+
+    <div class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </div>
+  </div>
+
+
+    
+      
+
+  <div class="post post-type-normal ">
+    <div class="post-header">
+
+      
+      
+        <h1 class="post-title">
+          
+          
+            
               <a class="post-title-link" href="/2015/07/11/Java并发编程（三）-中断/">
                 Java并发编程（三）-中断
               </a>
@@ -983,8 +1325,8 @@
           
           
             
-              <a class="post-title-link" href="/2015/07/05/Java并发编程（一）-并发基础/">
-                Java并发编程(一)-并发基础
+              <a class="post-title-link" href="/2015/07/05/Java并发编程（一）-并发编程简介/">
+                Java并发编程(一)-并发编程简介
               </a>
             
           
@@ -1013,8 +1355,8 @@
           
             <span class="post-comments-count">
             &nbsp; | &nbsp;
-            <a href="/2015/07/05/Java并发编程（一）-并发基础/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/05/Java并发编程（一）-并发基础/"></span>
+            <a href="/2015/07/05/Java并发编程（一）-并发编程简介/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/05/Java并发编程（一）-并发编程简介/"></span>
             </a>
           </span>
           
@@ -1501,7 +1843,7 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
         <div class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">8</span>
+              <span class="site-state-item-count">9</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
