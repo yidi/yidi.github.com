@@ -452,7 +452,7 @@ T2:
             <span class="keyword">while</span>(!Thread.interrupted()){
                 Toast t = finishedQueue.take();
                 TimeUnit.MILLISECONDS.sleep(<span class="number">100</span>);
-                <span class="keyword">if</span>(t.getId() != counter++ || t.getStatus() !=                                           Status.JAMMED){
+                <span class="keyword">if</span>(t.getId() != counter++ || t.getStatus() != Status.JAMMED){
                     System.out.println(<span class="string">"ERROR:"</span> + t);
                     System.exit(<span class="number">1</span>);
                 }<span class="keyword">else</span>{
