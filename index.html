@@ -207,13 +207,13 @@
       
         
           <p>Executor是最基本的任务执行框架，其子接口ExecutorService提供了更加丰富的功能，而ThreadPoolExecutor是其中最重要最常用的实现方式。Executors提供了丰富的方便的工厂方法用于获取Executor及其他有用的工具，下面我们就详细介绍这些工具。</p>
-<h2 id="Executor">Executor</h2><p>它只有一个方法void execute(Runnable command);<br>用于在将来的某一时刻执行给定的command，而command具体的执行方式取决于Executor的具体实现方式，也许是在一个新线程里执行，也许是在一个线程池里执行，也许就是用调用线程本身去执行。</p>
+<h2 id="Executor">Executor</h2><p>它只有一个方法<code>void execute(Runnable command)</code>;<br>用于在将来的某一时刻执行给定的command，而command具体的执行方式取决于Executor的具体实现方式，也许是在一个新线程里执行，也许是在一个线程池里执行，也许就是用调用线程本身去执行。</p>
 <p>Executor用于执行提交给其的runnable(),使任务本身与任务的如何执行解耦开来（包括线程使用和调度的细节）。使任务的执行机制更加灵活。<br>例如一般的我们应该使用</p>
 <pre><code>Executor executor = anExecutor<span class="comment">;</span>
 executor.execute(new RunnableTask())<span class="comment">;</span>
 </code></pre><p>而不是使用</p>
 <pre><code><span class="keyword">new</span> <span class="type">Thread</span>(<span class="keyword">new</span>(<span class="type">RunnableTask</span><span class="literal">()</span>)).start<span class="literal">()</span>;
-</code></pre><h2 id="ExecutorService">ExecutorService</h2><p>ExecutorService是Executor的子接口，它提供了更多的特性，我们可以关闭服务而不再接受新的任务的提交和执行。<br>submit()方法则比execute()方法更强大，它创建并返回一个Future对象，通过Future对象可以取消任务的执行或者等待任务的完成。或者在任务完成后获取执行结果等操作。</p>
+</code></pre><h2 id="ExecutorService">ExecutorService</h2><p>ExecutorService是Executor的子接口，它提供了更多的特性，我们可以关闭服务而不再接受新的任务的提交和执行。<br><code>submit()</code>方法则比<code>execute()</code>方法更强大，它创建并返回一个Future对象，通过Future对象可以取消任务的执行或者等待任务的完成。或者在任务完成后获取执行结果等操作。</p>
 <h2 id="ThreadPoolExecutor">ThreadPoolExecutor</h2><p>线程池要解决两个问题：</p>
 <p>1.在执行大量的线程时，通过减少每个任务调用的开销以提供性能，并且提供了在执行任务集合时绑定及管理资源（包括线程资源）的一些方法。</p>
 <p>2.维护基本的统计信息。</p>
@@ -226,32 +226,32 @@ executor.execute(new RunnableTask())<span class="comment">;</span>
 <pre><code>ThreadPoolExecutor(<span class="keyword">int</span> corePoolSize, <span class="keyword">int</span> maximumPoolSize, <span class="keyword">long</span> keepAliveTime, TimeUnit unit, BlockingQueue&lt;Runnable&gt; workQueue, ThreadFactory threadFactory) 
 </code></pre><p>相比第一个构造器，使用这个构造器需要指定特定的ThreadFactory。</p>
 <pre><code>ThreadPoolExecutor(<span class="keyword">int</span> corePoolSize, <span class="keyword">int</span> maximumPoolSize, <span class="keyword">long</span> keepAliveTime, TimeUnit unit, BlockingQueue&lt;Runnable&gt; workQueue, ThreadFactory threadFactory, RejectedExecutionHandler <span class="keyword">handler</span>)  
-</code></pre><p>这个构造器需要提供所有参数，分别为：池内核心线程数corePoolSize，池内最大线程数maximumPoolSize，存活时间keepAliveTime，时间单位timeUnit，待调度工作队列workQueue，及拒绝执行处理器handler。</p>
-<h3 id="线程数">线程数</h3><p>如果一个新的任务被提交到executor方法</p>
+</code></pre><p>这个构造器需要提供所有参数，分别为：池内核心线程数<code>corePoolSize</code>，池内最大线程数maximumPoolSize，存活时间<code>keepAliveTime</code>，时间单位<code>timeUnit</code>，待调度工作队列<code>workQueue</code>，及拒绝执行处理器<code>handler</code>。</p>
+<h3 id="线程数">线程数</h3><p>如果一个新的任务被提交到<code>executor()</code>方法</p>
 <h4 id="当前池内线运行线程数少于corePoolSize">当前池内线运行线程数少于corePoolSize</h4><p>线程池就会创建一个新的线程去处理这个请求，即使运行线程中部分是空闲状态。</p>
 <h4 id="当前池内运行线程数大于corePoolSize而少于maximumPoolSize">当前池内运行线程数大于corePoolSize而少于maximumPoolSize</h4><p>只有工作队列满的时候才会去创建一个新的线程，否则把当前任务添加到待调度工作队列。</p>
 <h4 id="当前池内运行线程数已经是maximumPoolSize">当前池内运行线程数已经是maximumPoolSize</h4><p>会触发RejectedExecutionHandler的处理，后面我们再说明具体策略。</p>
-<p>如果我们把corePoolSize设置的和maximumPoolSize一样大，就表示创建了一个固定尺寸的线程池，如果maximumPoolSize设置为一个实际意义上的无限值，例如Integer.MAX_VALUE，就表示线程池可以容纳任意数目的任务数。</p>
-<p>通常只在构造ThreadPoolExecutor时通过构造器设置corePoolSize和maximumPoolSize，但是也可以通过setCorePoolSize(int)和setMaximumPoolSize(int)方法在运行时动态设置和改变。</p>
-<h3 id="存活时间">存活时间</h3><p>如果当前运行的线程数目大于corePoolSize，则超过这个这个数目的线程如果空闲时间超过了keepAliveTime 指定的时间，线程就会被终止。这样在当前线程池不是很活跃的时候有效的减少了系统资源的消耗。之后如果线程池再次活跃起来，再去创建新的线程。这个参数配合TimeUnit参数一起使用。</p>
-<h3 id="待调度工作队列">待调度工作队列</h3><p>其可以用来传递和保持提交任务，workQueue的使用与线程池的大小相关</p>
+<p>如果我们把<code>corePoolSize</code>设置的和<code>maximumPoolSize</code>一样大，就表示创建了一个固定尺寸的线程池，如果<code>maximumPoolSize</code>设置为一个实际意义上的无限值，例如<code>Integer.MAX_VALUE</code>，就表示线程池可以容纳任意数目的任务数。</p>
+<p>通常只在构造ThreadPoolExecutor时通过构造器设置<code>corePoolSize</code>和<code>maximumPoolSize</code>，但是也可以通过<code>setCorePoolSize(int)</code>和<code>setMaximumPoolSize(int)</code>方法在运行时动态设置和改变。</p>
+<h3 id="存活时间">存活时间</h3><p>如果当前运行的线程数目大于<code>corePoolSize</code>，则超过这个这个数目的线程如果空闲时间超过了<code>keepAliveTime</code>指定的时间，线程就会被终止。这样在当前线程池不是很活跃的时候有效的减少了系统资源的消耗。之后如果线程池再次活跃起来，再去创建新的线程。这个参数配合<code>TimeUnit</code>参数一起使用。</p>
+<h3 id="待调度工作队列">待调度工作队列</h3><p>其可以用来传递和保持提交任务，<code>workQueue</code>的使用与线程池的大小相关</p>
 <h4 id="线程池内运行的线程少于corePoolSize">线程池内运行的线程少于corePoolSize</h4><p>直接创建一个新线程去处理任务，而不去排队。</p>
-<h4 id="线程池内运行的线程大于等于corePoolSize">线程池内运行的线程大于等于corePoolSize</h4><p>如果线程池队列未满就把任务添加到队列。否则，如果队列已满。则当前运行线程小于maximumPoolSize，则新建一个线程。当前运行线程已经是maximumPoolSize，则任务会被拒绝，触发RejectedExecutionHandler。</p>
-<p>workQueue有以下几种一般性的策略</p>
-<h4 id="Direct_handoffs">Direct handoffs</h4><p>workQueue一个好的默认选择就是使用一个同步队列直接将任务传递给线程，而不去持有任务，因此如果当前没有线程立即可用去执行任务时，试图再给workQueue添加任务就会失败。这一策略在处理一系列有内部依赖关系的任务时可以避免死机。Direct handoffs通常需要搭配一个无界的maximumPoolSizes从而避免拒绝新提交的任务。但是这样导致的一个问题就是，如果新提交任务数量的速度快于任务被处理的速度就会导致无限的线程增长。</p>
-<h4 id="Unbounded_queues">Unbounded queues</h4><p>Direct handoffs依赖于当前可用的线程数量，而Unbounded queues就是当corePoolSize都忙时新的任务就会被排队到队列中，也及maximumPoolSize此时是没有作用的，这在那种任务之间彼此独立且相互不影响其他任务执行的时候有作用。同样的，如果新提交的任务速度快于任务被处理的速度就会导致队列长度的无限增长。</p>
-<h4 id="Bounded_queues">Bounded queues</h4><p>Bounded queues顾名思义就是待调度的任务的排队队列是有界限的，不能无限增长，通过与有界的maximumPoolSizes配合可以避免资源耗尽，但是这种场景很难控制。<br>如果使用较小的maximumPoolSizes和较大的workQueue就会减少CPU使用率、系统资源和上下文切换开销，但是如果任务是IO密集型，则队列会一直增张，而系统资源就会大量空闲，从而显著的降低系统吞吐量。<br>如果使用较大的maximumPoolSizes和较小的workQueue就会使CPU使用率攀升，同样可能导致不可接受的调度任务开销，从而降低系统吞吐量。</p>
-<h3 id="线程工厂">线程工厂</h3><p>线程都是通过ThreadFactory创建的，而如果没有指定，默认的使用Executors.defaultThreadFactory() 创建的线程工厂，我们接下来再具体介绍这个默认实现。如果ThreadFactory创建线程失败，执行器可以保持正常的状态，但是不能执行任何任务。<br>而如果指定了特定的ThreadFactory实现，就会用指定的ThreadFactory创建线程。</p>
-<h4 id="ThreadFactory">ThreadFactory</h4><p>ThreadFactory是一个只有一个方法的接口newThread(Runnable r) 返回一个Thread对象，ThreadFactory的实现定制了线程的创建方式。在newThread()里可以初始化优先级，线程名、线程是否是后台线程、线程组等。<br>Executors.defaultThreadFactory()实现了一个默认的ThreadFactory工厂。</p>
-<h3 id="拒绝执行处理器">拒绝执行处理器</h3><p>如果Executor已经关闭，或者Executor池中的线程数和工作队列都已经饱和了，再提交到execute()方法的任务就会被拒绝。execute()方法就会调用其RejectedExecutionHandler的rejectedExecution()方法。JDK提供了4个预定义的RejectedExecutionHandler：</p>
+<h4 id="线程池内运行的线程大于等于corePoolSize">线程池内运行的线程大于等于corePoolSize</h4><p>如果线程池队列未满就把任务添加到队列。否则，如果队列已满。则当前运行线程小于<code>maximumPoolSize</code>，则新建一个线程。当前运行线程已经是maximumPoolSize，则任务会被拒绝，触发RejectedExecutionHandler。</p>
+<p><code>workQueue</code>有以下几种一般性的策略</p>
+<h4 id="Direct_handoffs">Direct handoffs</h4><p>workQueue一个好的默认选择就是使用一个同步队列直接将任务传递给线程，而不去持有任务，因此如果当前没有线程立即可用去执行任务时，试图再给<code>workQueue</code>添加任务就会失败。这一策略在处理一系列有内部依赖关系的任务时可以避免死机。Direct handoffs通常需要搭配一个无界的<code>maximumPoolSizes</code>从而避免拒绝新提交的任务。但是这样导致的一个问题就是，如果新提交任务数量的速度快于任务被处理的速度就会导致无限的线程增长。</p>
+<h4 id="Unbounded_queues">Unbounded queues</h4><p>Direct handoffs依赖于当前可用的线程数量，而Unbounded queues就是当<code>corePoolSize</code>都忙时新的任务就会被排队到队列中，也即<code>maximumPoolSize</code>此时是没有作用的，这在那种任务之间彼此独立且相互不影响其他任务执行的时候有作用。同样的，如果新提交的任务速度快于任务被处理的速度就会导致队列长度的无限增长。</p>
+<h4 id="Bounded_queues">Bounded queues</h4><p>Bounded queues顾名思义就是待调度的任务的排队队列是有界限的，不能无限增长，通过与有界的<code>maximumPoolSizes</code>配合可以避免资源耗尽，但是这种场景很难控制。<br>如果使用较小的<code>maximumPoolSizes</code>和较大的<code>workQueue</code>就会减少CPU使用率、系统资源和上下文切换开销，但是如果任务是IO密集型，则队列会一直增张，而系统资源就会大量空闲，从而显著的降低系统吞吐量。<br>如果使用较大的<code>maximumPoolSizes</code>和较小的<code>workQueue</code>就会使CPU使用率攀升，同样可能导致不可接受的调度任务开销，从而降低系统吞吐量。</p>
+<h3 id="线程工厂">线程工厂</h3><p>线程都是通过ThreadFactory创建的，而如果没有指定，默认的使用<code>Executors.defaultThreadFactory()</code> 创建的线程工厂。如果ThreadFactory创建线程失败，执行器可以保持正常的状态，但是不能执行任何任务。<br>而如果指定了特定的ThreadFactory实现，就会用指定的ThreadFactory创建线程。</p>
+<h4 id="ThreadFactory">ThreadFactory</h4><p>ThreadFactory是一个只有一个方法的接口<code>newThread(Runnable r)</code>返回一个Thread对象，ThreadFactory的实现定制了线程的创建方式。在<code>newThread()</code>里可以初始化优先级，线程名、线程是否是后台线程、线程组等。<br><code>Executors.defaultThreadFactory()</code>实现了一个默认的ThreadFactory工厂。</p>
+<h3 id="拒绝执行处理器">拒绝执行处理器</h3><p>如果Executor已经关闭，或者Executor池中的线程数和工作队列都已经饱和了，再提交到<code>execute()</code>方法的任务就会被拒绝。<code>execute()</code>方法就会调用其RejectedExecutionHandler的<code>rejectedExecution()</code>方法。JDK提供了4个预定义的RejectedExecutionHandler：</p>
 <h4 id="ThreadPoolExecutor-AbortPolicy">ThreadPoolExecutor.AbortPolicy</h4><p>直接抛出一个运行时异常RejectedExecutionException。</p>
-<h4 id="ThreadPoolExecutor-CallerRunsPolicy">ThreadPoolExecutor.CallerRunsPolicy</h4><p>调用execute()的线程自身去运行对应的任务。这样就提供了一个简单的反馈控制机制(feedback control mechanism)降低任务被提交的频率。</p>
+<h4 id="ThreadPoolExecutor-CallerRunsPolicy">ThreadPoolExecutor.CallerRunsPolicy</h4><p>调用<code>execute()</code>的线程自身去运行对应的任务。这样就提供了一个简单的反馈控制机制(feedback control mechanism)降低任务被提交的频率。</p>
 <h4 id="ThreadPoolExecutor-DiscardPolicy">ThreadPoolExecutor.DiscardPolicy</h4><p>简单的丢弃不能被执行的任务。</p>
 <h4 id="ThreadPoolExecutor-DiscardOldestPolicy">ThreadPoolExecutor.DiscardOldestPolicy</h4><p>如果Executor还没有关闭，待调度工作队列对头的被丢弃，然后重试。</p>
 <p>除了使用以上的默认实现，也可以自定义并使用其他的RejectedExecutionHandler实现。</p>
-<h3 id="扩展性">扩展性</h3><p>提供了受保护的方法beforeExecute(java.lang.Thread, java.lang.Runnable) 和afterExecute(java.lang.Runnable, java.lang.Throwable) 这两个方法分别为在执行任务前后执行，这非常有用。可以覆盖这两个方法，从来达到特定的目的，例如用于在执行前后配置环境信息，获取统计量，记日志等。同样还有一个可覆盖的方法terminated()，这个方法在Executor被完全关闭后调用，在这里我们可以做任何需要做的特定的处理。</p>
+<h3 id="扩展性">扩展性</h3><p>提供了受保护的方法<code>beforeExecute(java.lang.Thread, java.lang.Runnable)</code>和<code>afterExecute(java.lang.Runnable, java.lang.Throwable)</code> 这两个方法分别为在执行任务前后执行，这非常有用。可以覆盖这两个方法，从来达到特定的目的，例如用于在执行前后配置环境信息，获取统计量，记日志等。同样还有一个可覆盖的方法<code>terminated()</code>，这个方法在Executor被完全关闭后调用，在这里我们可以做任何需要做的特定的处理。</p>
 <h2 id="Callable">Callable<v></v></h2><p>ExecutorService的submit()方法可以接收Callable对象，与Runnable一样，都是被一个线程去执行，而Runnable不返回值也抛出已检查异常，对应的Callable也只有一个方法：<code>V call()</code><br>其会返回一个值，并且在执行失败时会返回一个异常。</p>
-<h2 id="Future">Future</h2><p>ExecutorService的submit()方法接收一个Callable对象，而返回一个Future<t>对象，其代表异步计算的结果。其中Future<t>中的T就是Callable.call()返回的值，通过get()方法获取计算结果。get()检查异步任务是否完成，如果完成就获取计算结果，如果没有完成就阻塞，直到计算结果完成。<br>其实这里所谓的异步执行并不是真正意义上的异步，而是同步非阻塞机制，即NIO，而真正的异步机制AIO在JDK7之后才引入。<br>Future<t>一共提供了以下几个方法，这几个方法可以配合使用。<br>cancel(boolean mayInterruptIfRunning) 尝试徐晓任务的执行，如果任务已经完成，则不能被取消。<br>get() 等待计算完成，然后获取计算结果。<br>isCancelled() 如果任务在计算完成之前被取消，则返回true。<br>isDone() 如果任务完成了返回true。</t></t></t></p>
+<h2 id="Future">Future</h2><p>ExecutorService的submit()方法接收一个Callable对象，而返回一个Future<t>对象，其代表异步计算的结果。其中Future<t>中的T就是<code>Callable.call()</code>返回的值，通过<code>get()</code>方法获取计算结果。get()检查异步任务是否完成，如果完成就获取计算结果，如果没有完成就阻塞，直到计算结果完成。<br>其实这里所谓的异步执行并不是真正意义上的异步，而是同步非阻塞机制，即NIO，而真正的异步机制AIO在JDK7之后才引入。<br>Future<t>一共提供了以下几个方法，这几个方法可以配合使用。<br><code>cancel(boolean mayInterruptIfRunning)</code>尝试徐晓任务的执行，如果任务已经完成，则不能被取消。<br><code>get()</code>等待计算完成，然后获取计算结果。<br><code>isCancelled()</code>如果任务在计算完成之前被取消，则返回true。<br><code>isDone()</code> 如果任务完成了返回true。</t></t></t></p>
 <p>FutureTask是Future<t>接口的一个基本实现，同时FutureTask也实现了Runnalbe接口</t></p>
 <h2 id="Executors">Executors</h2><p>是并发包中提供的强大的工厂类，通过调用其中的静态工厂方法能获得大部分常用的工具。</p>
 <h3 id="获取线程池">获取线程池</h3><pre><code><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService newFixedThreadPool(<span class="keyword">int</span> nThreads)
