@@ -214,12 +214,12 @@
 java.util.concurrent.atomic
 java.util.concurrent.locks</code></p>
 <h3 id="java-util-concurrent">java.util.concurrent</h3><p>这里是并发编程常用的工具、一些小的可扩展框架、一些有用的或者繁琐、难以实现的功能。</p>
-<h4 id="Executors">Executors</h4><p><strong>接口：</strong><br><code>Executor</code>：是一个简单的用于定义自定义线程子系统的标准接口，包括线程池，异步IO，以及轻量级的任务框架。根据Executor的具体实现，任务可以有不同的执行方式。<br><code>ExecutorService</code> ：提供了一个更完整的异步任务执行框架，管理队列，任务的调度及控制关闭服务。<br><code>ScheduledExecutorService</code>子接口增加了对延时和周期性任务执行的支持。ExecutorServices提供方法安排Callable()类型的方法的异步执行。Callable()方法返回一个Future对象，Future用于确定执行是否完成，也提供了取消执行的方法。</p>
+<h4 id="Executors">Executors</h4><p><strong>接口：</strong><br><code>Executor</code>：是一个只提供了一个execute()方法的简单的调度自定义线程子系统的标准接口（包括线程池，异步IO）及轻量级的任务框架。根据Executor的具体实现，任务可以有不同的执行方式。<br><code>ExecutorService</code> ：提供了一个更完整的异步任务执行框架，管理任务的队列及调度并且允许关闭服务。<br><code>ScheduledExecutorService</code>子接口增加了对延时和周期性任务执行的支持。</p>
 <p><strong>实现：</strong><br><code>ThreadPoolExecutor</code> 和<code>ScheduledThreadPoolExecutor</code>提供了灵活的线程池。<br><code>Executors</code>类提供工厂方法用于最常用的Executors种类和配置。<br><code>FutureTask</code>提供了通用的可扩展实现Futures。<br><code>ExecutorCompletionService</code>协助处理异步任务组的处理。</p>
 <h4 id="Queues">Queues</h4><p><code>ConcurrentLinkedQueue</code>提供非阻塞的线程安全的FIFO队列，而BlockingQueue接口的5个实现则定义了阻塞版本的put()和take().这些类基本上覆盖了常用的生产者-消费者模式，消息、并行任务等相关并发设计。</p>
 <h4 id="Timing">Timing</h4><p><code>TimeUnit</code>类提供了包括纳秒在内的多种粒度用于指定和控制基于超时的操作。包中大多数的类都包含基于超时参数的操作以避免不确定的等待。所有使用超时的操作，超时参数表示操作在表明超时前需要等待的最小时间，这些实现都尽力在超时一旦发生后就检测到。但是在实际检测到超时及线程在超时后再次执行时还是会有一段不确定的时间流失。</p>
 <h4 id="Synchronizers">Synchronizers</h4><p>有四个类去实现同步原语。<br><code>Semaphore</code>:一个经典的并发工具。<br><code>CountDownLatch</code>： 是一个非常简单但很常用的实用程序，它会一直阻塞，直到获得了给定数目的信号，事件或条件后才继续执行。<br><code>CyclicBarrier</code>：是一个可复位的多路同步点。<br><code>Exchanger</code>：允许两个线程在某个点交换持有的对象，在一些管道设计中很常用。</p>
-<h4 id="Concurrent_Collections">Concurrent Collections</h4><p>这里主要是用于多线程环境中的一些集合的实现，这里的“Concurrent”    前缀和那些一般意义上的线程安全的集合例如Hashtable，synchronizedMap是不一样的，这里的“Concurrent”也是线程安全的，但是不是通过一个单一的排他锁支配的。ConcurrentHashMap可以保证任意数量的并发读操作及一定数目的并发写操作的安全性，“Synchronized”类型在我们需要通过单一的锁阻止所有对集合的访问时是很有用的，但是在那些需要多个线程同时访问集合的情况下，“Concurrent”类型更合适，而如果集合是独享的，或者是在持有某些锁后才能访问集合时，普通的非线程安全的集合是最好的。<br>同样的“Concurrent”集合的迭代器不同于普通集合，“Concurrent”的迭代器提供的是弱一致性的迭代器，而不像普通集合那样提供强一致性的迭代器，也即，如果是在“Concurrent”集合上进行迭代时，是可以对集合进行更新的，而在普通集合迭代期间，一旦有更新就会导致迭代失败。<br>其实并发的集合就以下三种：ConcurrentHashMap，CopyOnWriteArrayList，CopyOnWriteArraySet。</p>
+<h4 id="Concurrent_Collections">Concurrent Collections</h4><p>这里主要是用于多线程环境中的一些集合的实现，这里的“Concurrent”    前缀和那些一般意义上的线程安全的集合例如Hashtable，synchronizedMap是不一样的，这里的“Concurrent”也是线程安全的，但是不是通过一个单一的排他锁支配的。ConcurrentHashMap可以保证任意数量的并发读操作及一定数目的并发写操作的安全性，“Synchronized”类型在我们需要通过单一的锁阻止所有对集合的访问时是很有用的，但是在那些需要多个线程同时访问集合的情况下，“Concurrent”类型更合适，而如果集合是独享的，或者是在持有某些锁后才能访问集合时，普通的非线程安全的集合是最好的。<br>同样的“Concurrent”集合的迭代器不同于普通集合，“Concurrent”的迭代器提供的是弱一致性的迭代器，而不像普通集合那样提供强一致性的迭代器，也即，如果是在“Concurrent”集合上进行迭代时，是可以对集合进行更新的，而在普通集合迭代期间，一旦有更新就会导致迭代失败。</p>
 <p>在java.util.concurrent包下还有两个子包java.util.concurrent.atomic和java.util.concurrent.locks分别对应的是原子操作的实现和锁实现，在后面会详细进行介绍。</p>
 
       
@@ -237,6 +237,8 @@ java.util.concurrent.locks</code></p>
       
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/07/19/Java并发编程（六）-任务调度框架/">Java并发编程(六)-任务执行框架</a>
             
           </div>
 
@@ -310,7 +312,7 @@ java.util.concurrent.locks</code></p>
         <div class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">10</span>
+              <span class="site-state-item-count">11</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>

@@ -24,7 +24,7 @@
 
 
 
-  <meta name="keywords" content="Mock," />
+  <meta name="keywords" content="YIDI'S BLOG" />
 
 
 
@@ -47,7 +47,7 @@
 
 
 
-  <title> 单元测试工具-MOCK // YIDI'S BLOG </title>
+  <title> YIDI'S BLOG </title>
 </head>
 
 <body>
@@ -61,7 +61,9 @@
   </div>
 <![endif]-->
 
-  <div class="container one-column page-post-detail">
+  <div class="container one-column 
+   page-home 
+">
     <div class="headband"></div>
 
     <div id="header" class="header">
@@ -145,9 +147,9 @@
       <div class="main-inner">
         <div id="content" class="content">
           
-
   <div id="posts" class="posts-expand">
     
+      
 
   <div class="post post-type-normal ">
     <div class="post-header">
@@ -158,7 +160,9 @@
           
           
             
-              单元测试工具-MOCK
+              <a class="post-title-link" href="/2015/07/04/单元测试工具-MOCK/">
+                单元测试工具-MOCK
+              </a>
             
           
         </h1>
@@ -201,7 +205,8 @@
       
 
       
-        <p>我们在编写程序的过程中，离不开测试，测试又分为单元测试和集成测试。集成测试有著名的Jenkins平台，测试人员可以很方便的在上面部署集成测试任务进行测试.地址：<a href="http://jenkins-ci.org/" title="Jenkins" target="_blank" rel="external">http://jenkins-ci.org/</a> 但是在开发和单元测试阶段，我们更关注单元测试，相信不少人也正在用很多测试框架，例如：<a href="http://junit.org/" title="Junit" target="_blank" rel="external">Junit</a>,<a href="http://testng.org/doc/index.html" title="TestNG" target="_blank" rel="external">TestNG</a> 等JVM平台的单元测试框架。这些都是非常流行好用的测试工具。</p>
+        
+          <p>我们在编写程序的过程中，离不开测试，测试又分为单元测试和集成测试。集成测试有著名的Jenkins平台，测试人员可以很方便的在上面部署集成测试任务进行测试.地址：<a href="http://jenkins-ci.org/" title="Jenkins" target="_blank" rel="external">http://jenkins-ci.org/</a> 但是在开发和单元测试阶段，我们更关注单元测试，相信不少人也正在用很多测试框架，例如：<a href="http://junit.org/" title="Junit" target="_blank" rel="external">Junit</a>,<a href="http://testng.org/doc/index.html" title="TestNG" target="_blank" rel="external">TestNG</a> 等JVM平台的单元测试框架。这些都是非常流行好用的测试工具。</p>
 <h2 id="Mock介绍">Mock介绍</h2><p>实际工作中我们可能会遇到类似下面的情况：</p>
 <p>我们写了一个函数，函数需要调用其他模块或者服务获取结果，然后我们的函数对获取到的结果进行处理并返回处理后的结果。这里的服务可能是远程服务调用也可能是数据库服务调用，那么我们如果要对这个函数进行单元测试就一定需要保证远程服务调用当前或者当前数据库服务可用么？</p>
 <p>答案是：不用。</p>
@@ -254,52 +259,29 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
 }
 </code></pre><p>以上就是Mock的简单应用，一般的单元测试场景这已经足够使用了，如果需要了解更多Mock使用，可以进一步在<a href="http://mockito.org/" title="Mockito" target="_blank" rel="external">http://mockito.org/</a>进行学习。</p>
 
+        
       
     </div>
 
     <div class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/tags/Mock/"> #Mock </a>
-          
-        </div>
+
       
 
       
-        <div class="post-nav">
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2015/07/05/深入理解内部类（一）/">深入理解内部类(一)</a>
-            
-          </div>
-
-          <div class="post-nav-next post-nav-item">
-            
-          </div>
-        </div>
       
-
-      
+        <div class="post-eof"></div>
       
     </div>
   </div>
 
 
-
-    <div class="post-spread">
-      
-    </div>
-
     
-      <div class="comments" id="comments">
-        
-          <div class="ds-thread" data-thread-key="2015/07/04/单元测试工具-MOCK/"
-               data-title="单元测试工具-MOCK" data-url="http://yoursite.com/2015/07/04/单元测试工具-MOCK/">
-          </div>
-        
-      </div>
-    
+  </div>
+
+  
+  <div class="pagination">
+    <a class="extend prev" rel="prev" href="/">&laquo;</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
   </div>
 
 
@@ -322,15 +304,6 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
   <div id="sidebar" class="sidebar">
     <div class="sidebar-inner">
 
-      
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview">
-            站点概览
-          </li>
-        </ul>
       
 
       <div class="site-overview">
@@ -396,17 +369,6 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
       </div>
 
       
-        <div class="post-toc-wrap sidebar-panel-active">
-          <div class="post-toc-indicator-top post-toc-indicator"></div>
-          <div class="post-toc">
-            
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Mock介绍"><span class="nav-number">1.</span> <span class="nav-text">Mock介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Maven依赖"><span class="nav-number">2.</span> <span class="nav-text">Maven依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Mock使用示例"><span class="nav-number">3.</span> <span class="nav-text">Mock使用示例</span></a></li></ol></div>
-            
-          </div>
-          <div class="post-toc-indicator-bottom post-toc-indicator"></div>
-        </div>
-      
 
     </div>
   </div>
@@ -454,145 +416,6 @@ Mockito.when<span class="params">(dbService.getUserInfoData<span class="params">
   <script type="text/javascript" src="/js/search-toggle.js"></script>
 
   
-  
-<script type="text/javascript" src="/js/bootstrap.scrollspy.js?v=0.4.3" id="bootstrap.scrollspy.custom"></script>
-
-
-<script type="text/javascript" id="sidebar.toc.highlight">
-  $(document).ready(function () {
-    var tocSelector = '.post-toc';
-    var $tocSelector = $(tocSelector);
-    var activeCurrentSelector = '.active-current';
-
-    $tocSelector
-      .on('activate.bs.scrollspy', function () {
-        var $currentActiveElement = $(tocSelector + ' .active').last();
-
-        removeCurrentActiveClass();
-        $currentActiveElement.addClass('active-current');
-
-        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
-      })
-      .on('clear.bs.scrollspy', function () {
-        removeCurrentActiveClass();
-      });
-
-    function removeCurrentActiveClass () {
-      $(tocSelector + ' ' + activeCurrentSelector)
-        .removeClass(activeCurrentSelector.substring(1));
-    }
-
-    function processTOC () {
-      getTOCMaxHeight();
-      toggleTOCOverflowIndicators();
-    }
-
-    function getTOCMaxHeight () {
-      var $sidebarInner = $('.sidebar-inner');
-      var height = $('.sidebar').height() -
-                   $tocSelector.position().top -
-                   $('.post-toc-indicator-bottom').height();
-
-      $tocSelector.css('height', height);
-
-      return height;
-    }
-
-    function toggleTOCOverflowIndicators () {
-      tocOverflowIndicator(
-        '.post-toc-indicator-top',
-        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
-      );
-
-      tocOverflowIndicator(
-        '.post-toc-indicator-bottom',
-        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
-      )
-    }
-
-    $(document).on('sidebar.didShow', function () {
-      processTOC();
-    });
-
-    $('body').scrollspy({ target: tocSelector });
-    $(window).on('resize', function () {
-      if ( $('.sidebar').hasClass('sidebar-active') ) {
-        processTOC();
-      }
-    });
-
-    onScroll($tocSelector);
-
-    function onScroll (element) {
-      element.on('mousewheel DOMMouseScroll', function (event) {
-          var oe = event.originalEvent;
-          var delta = oe.wheelDelta || -oe.detail;
-          var self = this;
-
-          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
-          event.preventDefault();
-
-          toggleTOCOverflowIndicators();
-      });
-    }
-
-    function tocOverflowIndicator (indicator, action) {
-      $(indicator).velocity('stop').velocity({
-        opacity: action === 'show' ? 0.4 : 0
-      }, { duration: 100 });
-    }
-
-  });
-</script>
-
-
-  <script type="text/javascript" id="sidebar.nav">
-    $(document).ready(function () {
-      var html = $('html');
-
-      $('.sidebar-nav li').on('click', function () {
-        var item = $(this);
-        var activeTabClassName = 'sidebar-nav-active';
-        var activePanelClassName = 'sidebar-panel-active';
-        if (item.hasClass(activeTabClassName)) {
-          return;
-        }
-
-        var currentTarget = $('.' + activePanelClassName);
-        var target = $('.' + item.data('target'));
-
-        currentTarget.velocity('transition.slideUpOut', 200, function () {
-          target
-            .velocity('stop')
-            .velocity('transition.slideDownIn', 200)
-            .addClass(activePanelClassName);
-        });
-
-        item.siblings().removeClass(activeTabClassName);
-        item.addClass(activeTabClassName);
-      });
-
-      $('.post-toc a').on('click', function (e) {
-        e.preventDefault();
-        var offset = $(escapeSelector(this.getAttribute('href'))).offset().top;
-        html.velocity('stop').velocity('scroll', {
-          offset: offset  + 'px',
-          mobileHA: false
-        });
-      });
-
-      // Expand sidebar on post detail page by default, when post has a toc.
-      var $tocContent = $('.post-toc-content');
-      if (isDesktop() && CONFIG.sidebar === 'post') {
-        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
-          displaySidebar();
-        }
-      }
-    });
-  </script>
-
-
-
 
   <script type="text/javascript">
     $(document).ready(function () {
