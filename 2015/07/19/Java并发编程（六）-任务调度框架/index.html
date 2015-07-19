@@ -255,7 +255,7 @@ executor.execute(new RunnableTask())<span class="comment">;</span>
 </code></pre><p>与上一个类似，区别是线程通过指定的threadFactory创建。</p>
 <pre><code>public static ExecutorService <span class="function"><span class="title">newSingleThreadExecutor</span><span class="params">()</span></span>
 </code></pre><p>与第一个类似，不同的是只创建拥有一个线程的线程池，这样就保证任务是根据被提交的顺序执行的。<br>newFixedThreadPool(1)与其功能相同，但是不同的是newSingleThreadExecutor()不能重新配置。</p>
-<pre><code>public static ExecutorService <span class="function"><span class="title">newSingleThreadExecutor</span><span class="params">(ThreadFactory threadFactory)</span></span>`
+<pre><code>public static ExecutorService <span class="function"><span class="title">newSingleThreadExecutor</span><span class="params">(ThreadFactory threadFactory)</span></span>
 </code></pre><p>与上一个类似，区别是线程通过指定的threadFactory创建。同样其不能重新设定线程数量。</p>
 <pre><code>public static ExecutorService <span class="function"><span class="title">newCachedThreadPool</span><span class="params">()</span></span>
 </code></pre><p>创建一个线程池，其中线程数量根据需要创建，而没有限制，这样的线程池适合执行时间短的任务，任何空闲60秒中的线程都将被回收。其实就是<code>corePoolSize = 0, maximumPoolSize = Integer.MAX_VALUE keepAliveTime=60  TimeUnit = TimeUnit.SECONDS的线程池。</code></p>
