@@ -160,6 +160,104 @@
           
           
             
+              <a class="post-title-link" href="/2015/07/26/Java IO/">
+                Java IO(BIO)
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于 2015-07-26
+        </span>
+
+        
+          <span class="post-category">
+            &nbsp; | &nbsp; 分类于
+            
+              <a href="/categories/Core-Java/">Core Java</a>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+            &nbsp; | &nbsp;
+            <a href="/2015/07/26/Java IO/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/26/Java IO/"></span>
+            </a>
+          </span>
+          
+        
+      </div>
+    </div>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <h2 id="Java_IO分类">Java IO分类</h2><p>Java中大部分涉及流IO的都是在java.io包内。而大部分涉及文件IO的都在java.nio.file包内。<br>很多人将JDK1.4之前的Java IO称为所谓的BIO，及Blocking IO，而将JDK1.4之后引入的新的IO称为No-blocking IO，这些说法都没有完全的根据，但是确实在JDK1.4以后引入了新的java.nio包提供了支持非阻塞IO的方式，而之前的IO都是基于阻塞IO的。另外在JDK1.7后又产生了所谓AIO，即 Asynchronous<br>IO，人们把之前的IO归类为Synchronous IO，这里我们不过多讨论这些IO 的分类。在特定知识点处再说明。关于IO在Java的历次版本升级中的情况请参考：<a href="http://docs.oracle.com/javase/8/docs/technotes/guides/io/enhancements.html#jdk8" target="_blank" rel="external">官方文档（Enhancements in Java I/O）</a></p>
+<h2 id="IO_Stream">IO Stream</h2><h3 id="Byte_Streams">Byte Streams</h3><p>所有Byte Streams都继承自InputStream 和OutputStream，就是以字节为单位进行读写。需要注意的是使用完IO流后要进行close()操作。</p>
+<h3 id="Character_Streams">Character Streams</h3><p>所有Character Streams都继承自Reader和Writer，Java平台用Unicode编码，而Character Streams会自动处理本地字符集与Unicode之间的转换。 这在国际化的时候非常实用，即使不考虑国际化，使用Character Streams也不用担心字符集的问题了。Character Streams通常应用于包括很多行的场景，而不只是一个简单的字符串，这种场景下就需要处理换行符或者对行单独处理. BufferedReader和PrintWriter对应的提供了readLine()和println()方法，会根据操作系统的不同进行处理。</p>
+<h3 id="Buffered_Streams">Buffered Streams</h3><p>不论是Byte Streams还是Character Streams都是非缓冲流，这样每次进行IO请求的时候都要进行磁盘访问或者网络传输等昂贵的操作，而Buffered Streams可以减少这些开销，只要将非缓冲流对象传入缓存流类型构造器（也即是流装饰，装饰者模式应用的范例）即可将一个非缓冲流转换成一个缓冲流。Byte Streams对应的是 BufferedInputStream 和 BufferedOutputStream 而Character Streams对应的是BufferedReader和BufferedWriter。示例如下：</p>
+<pre><code>inputStream = new BufferedReader<span class="list">(<span class="keyword">new</span> FileReader<span class="list">(<span class="string">"xanadu.txt"</span>)</span>)</span><span class="comment">;</span>
+outputStream = new BufferedWriter<span class="list">(<span class="keyword">new</span> FileWriter<span class="list">(<span class="string">"characteroutput.txt"</span>)</span>)</span><span class="comment">;</span>
+</code></pre><h3 id="Scanning">Scanning</h3><p>Scanner类将输入分割为一个个的单词（token）默认的分隔符为空白字符（Character.isWhitespace）而Formatting 则将数据按照要求进行格式化。<br>Scanner可以通过useDelimiter()函数设定分隔符，useLocale()处理一些区域差异化。</p>
+<h3 id="Formatting">Formatting</h3><p>实现格式化的类是字符流类PrintWriter或者字节流类PrintStream,关于格式化用的并不多，如果需要可参考对应的函数的相关说明即可。</p>
+<h3 id="IO_Command_Line">IO Command Line</h3><p>命令行下的IO有标准流：标准输入System.in,标准输出：System.out，及标准错误System.err.这些不多介绍，另外还有Console类型，这个类型比以上三个类型更高级。尤其是处理密码安全输入等场景。输入的密码在用户屏幕是不可见的。</p>
+<h3 id="Data_Stream">Data Stream</h3><p>数据流支持所有的基本数据类型包括字符串，对应的类型为DataInputStream和DataOutputStream，所有输入数据流都实现了DataInput接口而所有输出数据流都实现了DataOutput接口。数据流写出用writeDouble()、writeInt()、.writeUTF()等函数，读入用readDouble()、readInt()、readUTF()等函数，并且通过捕获EOFException异常来探测数据的结束。输入数据流不会检验读入的数据流中的数据值是否正确以及数据所在位置，这完全需要程序员去控制。<br>需要说明是使用浮点数表示精确的货币值是很糟糕的，因为浮点数并不精确，尤其是处理“0.1”这样的小数部分。如果需要处理货币值应该使用BigDecimal，但是BigDecimal是一个对象类型，而不是数据类型，因此需要使用Object Stream处理。</p>
+<h3 id="Object_Stream">Object Stream</h3><p>Object Stream支持对象的IO。对象流对应的类型为 ObjectInputStream和ObjectOutputStream，他们分别实现了 ObjectInput和ObjectOutput接口，这两个接口又分别是DataInput和DataOutput的子接口，也即Object Stream实现了Data Stream的所有方法。</p>
+<p>writeObject()和readObject()的使用方法和数据流中的方式使用方式一样，但是这里包含一些复杂的对象管理逻辑。一些对象中会包含对另一些对象的引用。readObject()要向从对象流中重构对象，就必须同时能重构对象所引用的其他对象，而这些额外被引用的对象也有可能还引用了另外的对象等等。这就要求writeObject()方法在将对象写入对象流的时候遍历对象的引用网并将所有涉及到的对象都写入流中。也即对一个对象进行writeObject()操作，可能会导致写入多个对象。</p>
+<p>例如对象a包含对对象b和对象c的引用，而对象b又包含对对象d和e的引用，调用writeobject(a)就会不仅仅写入a，同时也会将b、c、d、e也写入。这时再调用readObject()的时候，这四个对象也就会被读回而构建起对象a。</p>
+<p>但是考虑另外一种情况，就是两个对象a和b同时引用另一个对象c，如果对a、b两个对象进行readobject()操作他们引用的仍然是同一个对象c。一个流对一个对象只能有一份拷贝，即使这个拷贝被多个对象引用。也就是如果你对同一个对象进行两次调用writeobject()操作。对象只会写入一次，而会写入两次对这个对象的引用。（这也正是符合对象被引用的逻辑）例如：</p>
+<pre><code><span class="keyword">Object</span> ob = new <span class="keyword">Object</span>();
+<span class="keyword">out</span>.writeObject(ob);
+<span class="keyword">out</span>.writeObject(ob);
+
+<span class="keyword">Object</span> ob1 = <span class="keyword">in</span>.readObject();
+<span class="keyword">Object</span> ob2 = <span class="keyword">in</span>.readObject();
+</code></pre><p>这里读回的ob1和ob2是同一个对象。<br>但是如果将一个对象分别写入到两个不同的流中，则从这两个流中再读回的对象就会是两个不同的对象了。</p>
+<p>文中关于流的完整示例代码在：<a href="https://github.com/yidi/Learn/tree/master/io/stream" target="_blank" rel="external">https://github.com/yidi/Learn/tree/master/io/stream</a></p>
+
+        
+      
+    </div>
+
+    <div class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </div>
+  </div>
+
+
+    
+      
+
+  <div class="post post-type-normal ">
+    <div class="post-header">
+
+      
+      
+        <h1 class="post-title">
+          
+          
+            
               <a class="post-title-link" href="/2015/07/26/ActiveMQ（一）-初窥/">
                 ActiveMQ（一）-初窥
               </a>
@@ -1721,224 +1819,6 @@ T2:
 
 
     
-      
-
-  <div class="post post-type-normal ">
-    <div class="post-header">
-
-      
-      
-        <h1 class="post-title">
-          
-          
-            
-              <a class="post-title-link" href="/2015/07/05/Java并发编程（一）-并发编程简介/">
-                Java并发编程(一)-并发编程简介
-              </a>
-            
-          
-        </h1>
-      
-
-      <div class="post-meta">
-        <span class="post-time">
-          发表于 2015-07-05
-        </span>
-
-        
-          <span class="post-category">
-            &nbsp; | &nbsp; 分类于
-            
-              <a href="/categories/CoreJava/">CoreJava</a>
-
-              
-              
-
-            
-          </span>
-        
-
-        
-          
-            <span class="post-comments-count">
-            &nbsp; | &nbsp;
-            <a href="/2015/07/05/Java并发编程（一）-并发编程简介/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/05/Java并发编程（一）-并发编程简介/"></span>
-            </a>
-          </span>
-          
-        
-      </div>
-    </div>
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <p>Java中的并发就是指多线程编程，并发编程可以使我们将程序划分为多个分离的，独立运行的任务。每一个任务都由执行线程来驱动。线程用于驱动任务，因此需要一种描述任务的方式，在Java中由Runnable接口来提供。要想定义一个基于线程驱动的任务，只需要实现Runnable接口，并编写其run()方法，在其中实现你的任务需要实现的功能。<br>任务的run()方法通常来讲总是以某种形式的循环实现，这样这个任务就可以一直执行下去，直到满足一定的条件不再需要执行为止，这个满足一定条件就是跳出循环的条件。这里的Runnable 和run()方法不具备执行的能力，它必须显示的依附于一个线程上，因此叫做线程驱动任务。</p>
-<h2 id="1-Thread类">1.Thread类</h2><p>Thread类是Java并发最基础也是最核心的线程类，最基本的要让一个Runnable接口转变成一个可执行的任务就是将其提交给一个Thread对象，然后调用Thread对象的start()方法使其运行，此时线程就会自动驱动Runnable任务并执行其run()方法。</p>
-<pre><code><span class="keyword">Thread</span> t <span class="subst">=</span> <span class="literal">new</span> <span class="keyword">Thread</span>(<span class="literal">new</span> 一个Runnable对象)
-t<span class="built_in">.</span>start();
-</code></pre><p>这里用Runnable接口构建了一个Thread对象，并且这个Thread对象通过调用其start()方法对Runnable的run()方法进行调用，之后run()就可以执行一系列的动作了，start()方法在调用了run()方法后会很快返回，然后主线程（调用start方法的线程）可以继续执行接下来的动作。而于此同时也产生了一个新线程，它就是执行run()的线程，这两个线程在这种情况下没有任何同步，完全是随操作系统和JDK的调用执行自己的任务。</p>
-<p>例如下面的程序就是main线程驱动了一个新的线程，然后这两个线程根据操作系统和JDK的调用执行，直到flag标志变为false时MyRunnable才从run()方法反回。</p>
-<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadExecuteRunnable</span> </span>{
-    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">boolean</span> flag = <span class="keyword">true</span>;
-    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyRunnable</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>{
-        <span class="annotation">@Override</span>
-        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
-            <span class="comment">//直到flag为false才停止执行</span>
-            <span class="keyword">while</span>(flag == <span class="keyword">true</span>){
-                System.out.println(<span class="string">"I'm MyRunnable tread!"</span>);
-            }
-        }
-    }
-    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{
-        <span class="comment">// <span class="doctag">TODO</span> Auto-generated method stub</span>
-        Thread t = <span class="keyword">new</span> Thread(<span class="keyword">new</span> MyRunnable());
-        t.start();
-        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>;i &lt; <span class="number">10</span>;i++)
-            System.out.println(<span class="string">"I'm MAIN thread!"</span>);
-        flag = <span class="keyword">false</span>;
-    }
-}
-</code></pre><p>需要说明的是，如果在main线程的最后没有对flag进行置false操作，MyRunnable就会一直执行无限执行下去。main()方法创建了Thread t之后并没有捕获任何对其的引用，而我们知道Java的垃圾回收机制会对没用引用的死对象就行回收，但是这里的线程t不仅没被及时回收，而且在main结束之后还会一直执行下去，这是因为虽然main没有捕获Thread t的引用，但是每个线程都会进行自我注册，因此实际上有一个对其的引用，直到其从run()返回。</p>
-<h2 id="2-Executor">2.Executor</h2><p>如上我们通过显示的创建一个Thread对象来驱动一个具体的任务，然而在Java的并发模型中提供了一个更好的实现方式Executor，其为我们管理Thread对象，简化并发编程，它在客户端和任务之间提供了一个间接层，不用客户显示的执行任务，任务由它去执行并管理，而无需显示的管理线程的生命周期。Executor 知道如何恰当的构建上下文来执行Runnable对象，我们通过Executors类的静态方法创建不同类型的Executor.</p>
-<pre><code>ExecutorService <span class="keyword">exec</span> = Exectors.newCachedThreadPool();
-<span class="keyword">exec</span>.executor(new 一个Runnable对象);
-<span class="keyword">exec</span>.<span class="keyword">shutdown</span>();
-</code></pre><p>这里的单个exec可以被用来创建和管理系统中所有的任务，这里的exec类型为每一个提交给它的任务都通过调用executor创建一个新的线程执行，最后调用shutdown()方法是为了防止有新的任务被提交给这个exec对象。</p>
-<pre><code><span class="keyword">package</span> examples.concurrent.java;
-<span class="keyword">import</span> java.util.concurrent.ExecutorService;
-<span class="keyword">import</span> java.util.concurrent.Executors;
-<span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadExecuteRunnable</span> </span>{
-    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> flag = <span class="keyword">true</span>;
-    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">MyRunnable</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>{
-    <span class="keyword">int</span> id;
-        <span class="function"><span class="keyword">public</span> <span class="title">MyRunnable</span><span class="params">(<span class="keyword">int</span> id)</span></span>{
-            <span class="keyword">this</span>.id = id;
-        }
-        <span class="annotation">@Override</span>
-        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
-            <span class="comment">//直到flag为false才停止执行</span>
-            <span class="keyword">while</span>(flag == <span class="keyword">true</span>){
-                System.out.println(<span class="string">"I'm MyRunnable tread-"</span> + id);
-                Thread.yield();
-            }
-            System.out.println(<span class="string">"I'm Returned tread-"</span> + id);
-        }
-    }
-    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{
-        <span class="comment">// <span class="doctag">TODO</span> Auto-generated method stub</span>
-        ExecutorService exec = Executors.newCachedThreadPool();
-        <span class="keyword">for</span>(<span class="keyword">int</span> i  = <span class="number">0</span>; i &lt; <span class="number">5</span>;i++){
-            exec.execute(<span class="keyword">new</span> MyRunnable(i));
-        }
-        exec.shutdown();<span class="comment">//如果注释掉这句话，程序将一直执行并等待。</span>
-        System.out.println(<span class="string">"I'm MAIN thread!"</span>);
-        flag = <span class="keyword">false</span>;
-    }
-}
-</code></pre><p>从上面的代码中可以看到，我们没有显示的创建驱动任务的Thread而是通过Executor管理并执行了多个线程，同时注意如果没有调用exec.shutdown()，程序会一直运行并等待新的任务的提交，因此当我们明确没有任务要执行的时候就需要调用shutdown将其Executor服务关掉。</p>
-<p>通常我们首选的Executor是CachedThreadPool,它会在程序执行过程中创建与所需数据相同的线程，并且在有旧线程被回收的时候停止创建新的线程，而如果这种方式可能出现问题的时候我们也可以选择使用FixedThreadPool,它将会创建固定数据的线程，可以预先创建创建对应数据的线程，不用每次为新来的任务创建对应的线程而产生创建线程的开销，一旦任务数多于对应的线程数，就会产生等待。另一种特殊的固定线程的是SingleThreadExecutor,顾名思义只创建一个线程，是线程数量为1的FixedThreadPool,这个执行器可以隐式的使任务根据其提交的先后顺序进行排队，即序列化任务。</p>
-<h2 id="3-Callable">3.Callable</h2><p>Runnable不返回值。如果需要返回值，则可以实现Callable接口，它有一个类型参数,并且对应的方法是call()，对应的调用方法是Executor.submit()。该调用返回一个Future对象，并使用call()返回的结果进行了参数化，例如call()返String类型，则返回的是Future<string>对象，通过Future对象的get()方法可以获取最终的返回值。</string></p>
-<h2 id="4-休眠、优先级、让步、后台线程、JOIN">4.休眠、优先级、让步、后台线程、JOIN</h2><p><strong>休眠：</strong>通过TimeUnit对应的sleep()方法，其使当前线程休眠一段时间（阻塞），sleep()方法可以抛出InterruptedException，我们需要在本地（当前线程）处理这个异常，因为异常不能跨线程传播，我们需要明确的是不能依赖sleep函数去控制程序的顺序，必须使用同步控制。</p>
-<p><strong>优先级：</strong>调度器倾向于让优先级高的线程先执行，但是优先级低的也仍然有机会执行，这并不会导致死锁。不同的操作系统对JDK优先级的映射也不同，一般情况下我们不应该对线程设置优先级，最多只使用MAX_PRIORITY NORM_PRIORITY MIN_PRIORITY三个级别。例如：Thread.currentThread().setPriority(MAX_PRIORITY).</p>
-<p><strong>让步：</strong>通过调用Thread.yield()暗示当前线程可以让步，其他线程可以运行，但是这只是一种建议，类似于gc()一样，没有任何机制保障一定会让步，我们也不能依赖它。</p>
-<p><strong>后台线程：</strong>所谓后台线程就是在程序运行的时候提供一种通用的服务的线程，并且这种线程不属于程序中不可或缺的部分，当所有的非后台线程结束时，后台线程会全部被杀死。如果非后台线程还在运行，程序就不会终止。后台线程必须在调用start()之前先调用setDaemon()方法才能设置为后台线程。需要说明的是：后台线程创建的任何线程都是后台线程，即使被创建的线程并没有声明为后台线程，后台线程会在非后台线程都结束的时候直接从run()方法返回，连最后的finally子句都不会执行，因此我们无法优雅的关掉后台线程。</p>
-<p><strong>JOIN:</strong>一个线程可以在其他线程上调用join，而等待这个线程醒来，此时，当前线程将会挂起，而直到目标线程（也就是被在其上调用Join的线程）结束。当然对join的调用可以被interrupt()方法中断，因此需要用try catch语句，当一个线程在另一个线程上调用interrupt()时将给该线程设定一个标志，表明线程已经被中断，但是在异常捕获时将清除这个标志，所以在catch子句中，isInterrupted()标志总是为false。其实在JDK5之后的的concurrent包中有CyclicBarrier比join更好用。</p>
-<h2 id="5-异常的捕获">5.异常的捕获</h2><p>请记住，一旦异常从线程的run()方法逃逸出来，它就会向外传送到控制台，不能用普通的异常处理机制try catch语句进行捕获，例如下面的线程总是会在run()中抛出一个异常，而在对应代码段加上try catch语句是无效的，仍旧会抛出对应的异常。</p>
-<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExceptionThread</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>{
-    <span class="annotation">@Override</span>
-    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
-        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException();
-    }
-
-    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{
-        <span class="keyword">try</span> {
-            ExecutorService exec = Executors.newCachedThreadPool();
-            exec.execute(<span class="keyword">new</span> ExceptionThread());
-        } <span class="keyword">catch</span> (Exception e) {
-        }
-    }
-｝
-</code></pre><p>Thread.UncaughtExceptionhandler是JDK5中的一个新接口。它允许在每个Thread上都附着一个异常处理器，Thread.UncaughtExceptionhandler.uncaughtException()会在线程因未捕获异常而死亡时被调用。接下来我们的工作就是在用Executor产生线程时为每个线程对象都附着一个Thread.UncaughtExceptionhandler。<br>Executors创建线程除了可以使用无参的方法，还可以为方法传递一个ThreadFactory对象，而这里我们就是利用这个ThreadFactory对象为我们的线程附着Thread.UncaughtExceptionhandler。示例代码如下：</p>
-<pre><code><span class="keyword">class</span> <span class="title">HandlerThreadFactory</span> <span class="title">implements</span> <span class="title">ThreadFactory</span>{
-
-    @<span class="function">Override
-    <span class="keyword">public</span> Thread <span class="title">newThread</span>(<span class="params">Runnable r</span>) </span>{
-        System.<span class="keyword">out</span>.println(<span class="keyword">this</span> + <span class="string">"Create new Thread!"</span>);
-        Thread t = <span class="keyword">new</span> Thread(r);
-        System.<span class="keyword">out</span>.println(t);
-        t.setUncaughtExceptionHandler(<span class="keyword">new</span> MyUncaughtExceptionHander());
-        System.<span class="keyword">out</span>.println(t.getUncaughtExceptionHandler());
-        <span class="keyword">return</span> t;
-    }
-}
-</code></pre><p>可以看到，实现ThreadFactory需要实现其中的newThread()方法，这里就是我们要创建的线程，我们的工厂类HandlerThreadFactory 就是在这里通过setUncaughtExceptionHandler()方法为我们的线程附着上默认的异常处理器。<br>可以看到我们创建了工厂，还需要创建对应的异常处理器，这里是MyUncaughtExceptionHander，其示例代码如下，它需要实现我们上面提到的Thread.UncaughtExceptionHandler接口并且实现其中的uncaughtException()方法，这个方法就是正式处理异常要调用的方法。</p>
-<pre><code><span class="class"><span class="keyword">class</span> <span class="title">MyUncaughtExceptionHander</span> <span class="keyword">implements</span> <span class="title">Thread</span>.<span class="title">UncaughtExceptionHandler</span></span>{
-    <span class="annotation">@Override</span>
-    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">uncaughtException</span><span class="params">(Thread t, Throwable e)</span> </span>{
-        System.out.println(<span class="string">"Catch this:"</span> + e);
-    }
-}
-</code></pre><p>这时，我们将我们的工厂传递给Executors对应的方法后，新创建的线程在run()中抛出的异常就会被捕获。完整代码如下：</p>
-<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ExceptionThreadWithUncaughtExceptionHandler</span> </span>{
-    <span class="class"><span class="keyword">class</span> <span class="title">MyUncaughtExceptionHander</span> <span class="keyword">implements</span>         <span class="title">Thread</span>.<span class="title">UncaughtExceptionHandler</span></span>{
-        <span class="annotation">@Override</span>
-        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">uncaughtException</span><span class="params">(Thread t, Throwable e)</span> </span>{
-            System.out.println(<span class="string">"Catch this:"</span> + e);
-        }    
-    }
-    <span class="class"><span class="keyword">class</span> <span class="title">HandlerThreadFactory</span> <span class="keyword">implements</span> <span class="title">ThreadFactory</span></span>{
-        <span class="annotation">@Override</span>
-        <span class="function"><span class="keyword">public</span> Thread <span class="title">newThread</span><span class="params">(Runnable r)</span> </span>{
-            System.out.println(<span class="keyword">this</span> + <span class="string">"Create new Thread!"</span>);
-            Thread t = <span class="keyword">new</span> Thread(r);
-            System.out.println(t);
-            t.setUncaughtExceptionHandler(<span class="keyword">new</span> MyUncaughtExceptionHander());
-            System.out.println(t.getUncaughtExceptionHandler());
-            <span class="keyword">return</span> t;
-        }
-    }
-    <span class="class"><span class="keyword">class</span> <span class="title">ExceptionThread2</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>{
-        <span class="annotation">@Override</span>
-        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>{
-            Thread t = Thread.currentThread();
-            System.out.println(<span class="string">"run by :"</span> + t);
-            System.out.println(<span class="string">"en:"</span> + t.getUncaughtExceptionHandler());
-            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException();
-        }    
-    }
-    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>{
-        ExceptionThreadWithUncaughtExceptionHandler it = <span class="keyword">new</span> ExceptionThreadWithUncaughtExceptionHandler();
-        <span class="comment">//Thread.setDefaultUncaughtExceptionHandler(it.new MyUncaughtExceptionHander());</span>
-        ExecutorService exec = Executors.newCachedThreadPool(it.new HandlerThreadFactory());
-        exec.execute(it.new ExceptionThread2());
-    }
-}
-</code></pre><p>我们可以根据需要为我们的线程逐个设置异常处理器，但是如果我们知道在代码中需要处处使用相同的异常处理器，那么我们可以在Thread类中设置一个静态阈来设置所有线程的默认异常处理器。其用法为：Thread.setDefaultUncaughtExceptionHandler();系统调用异常处理器的优先顺序为：专用异常处理器，如果没有则调用线程组专用异常处理器，如果以上都没有最后才调用默认处理器。</p>
-
-        
-      
-    </div>
-
-    <div class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </div>
-  </div>
-
-
-    
   </div>
 
   
@@ -1977,21 +1857,21 @@ t<span class="built_in">.</span>start();
         <div class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">12</span>
+              <span class="site-state-item-count">13</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
-              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-count">4</span>
               <span class="site-state-item-name">分类</span>
               </a>
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">4</span>
+              <span class="site-state-item-count">5</span>
               <span class="site-state-item-name">标签</span>
               </a>
           </div>
