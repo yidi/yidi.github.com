@@ -24,7 +24,7 @@
 
 
 
-  <meta name="keywords" content="Java并发编程," />
+  <meta name="keywords" content="MQ," />
 
 
 
@@ -47,7 +47,7 @@
 
 
 
-  <title> Java并发编程（二）-共享资源 // YIDI'S BLOG </title>
+  <title> ActiveMQ（一）-初窥 // YIDI'S BLOG </title>
 </head>
 
 <body>
@@ -158,7 +158,7 @@
           
           
             
-              Java并发编程（二）-共享资源
+              ActiveMQ（一）-初窥
             
           
         </h1>
@@ -166,14 +166,14 @@
 
       <div class="post-meta">
         <span class="post-time">
-          发表于 2015-07-07
+          发表于 2015-07-26
         </span>
 
         
           <span class="post-category">
             &nbsp; | &nbsp; 分类于
             
-              <a href="/categories/CoreJava/">CoreJava</a>
+              <a href="/categories/JEE/">JEE</a>
 
               
               
@@ -186,8 +186,8 @@
           
             <span class="post-comments-count">
             &nbsp; | &nbsp;
-            <a href="/2015/07/07/Java并发编程（二）-共享资源/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/07/Java并发编程（二）-共享资源/"></span>
+            <a href="/2015/07/26/ActiveMQ（一）-初窥/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/26/ActiveMQ（一）-初窥/"></span>
             </a>
           </span>
           
@@ -201,13 +201,86 @@
       
 
       
-        <p>这篇简单介绍线程资源共享即同步问题。</p>
-<p>多线程各自运行，你就无法确定一个线程何时在运行，当前哪个线程在运行。这在对<strong>临界资源</strong>访问时就肯定会出现问题，假设如果两个线程试图同时获取一个相同的资源的时候，如果不加以控制，就可能至少有其中一个线程访问到状态不正确的资源，因此使用线程时一个重要的工作就是进行线程的同步。基本上并发模式在解决线程冲突问题的时候基本上都是采用序列化访问共享资源的方案，不同的场景有具体的不同处理方式。</p>
-<h2 id="1-Synchronized_&amp;_Lock">1.Synchronized &amp; Lock</h2><p>Java中通过synchronized 关键字为资源冲突提供了内置支持，当任务要执行被synchronized 保护的代码时，会<strong>先检查锁是否可用，之后获取锁，然后执行代码，最后释放锁</strong>。<br>所有的共享资源一般是以对象的形式存在内存片段中，但也可以是文件，IO端口，打印机等。要控制对共享资源的访问，先要将其包装进一个对象，然后把所有要访问这个资源的方法标记为synchronized。如<strong>果某个任务处于对标记为synchronized 的方法的调用中，那么在这个任务从该方法返回前，其他所有要调用该被标记为synchronized 的方法的任务都会被阻塞</strong>。<br>所有对象都自动含有单一的锁，当<strong>一个任务</strong>在对象上调用其任意的synchronized 方法时，此对象都被加锁。这时<strong>其他任何任务</strong>要调用该对象上其他的synchronized 方法只有等到前一个synchronized 方法调用完毕并释放了锁之后才能被调用。<br>一个任务可以多次获得对象的锁，如果该任务已经获得当前对象的锁，那么它在调用了该对象的synchronized 方法后，如果该方法需要继续调用对象的另一个synchronized 方法是可以的，JVM负责跟踪和维护对象被加锁的次数，如果对象被第一次加锁，则计数器为1，下一次加锁计数器为2，直到完全释放，计数器变为0，此时其他任务就可以调用对象的synchronized 方法了，但是在计数器不为0的时候，只有当前已经获取到锁的任务可以调用对象的synchronized 方法。<br>针对每一个类，也有一个锁 。synchronized static 可以保证在类的范围内防止对static数据的并发访问。<br>如果在类中有超过一个方法在处理临界资源，那必须同步所有处理这些资源的相关方法，否则并发就不能正常工作。<br> 除了使用synchronized 之外，还可以使用Lock进行显示的加锁操作，显示的加锁比synchronized 更灵活，具有更细粒度的操作，可以在锁失败时可以做一些清理工作，显示的锁操作必须使用try catch finally语句，并且数据返回必须在try语句块中，以确保unlock()不会过早发声，将数据暴露给其他任务，而且必须有finally语句块，在其中处理unlock()操作。显示的加锁操作比synchronized赋予了更灵活的特性，但是维护起来比synchronized 跟复杂，代码也更更容易出错，但是由于显示加锁允许做更多的控制，因此适用范围更广。</p>
-<h2 id="2-Volatile">2.Volatile</h2><p>在Java中<strong>不能依赖原子性就不使用同步</strong>，volatile关键字修饰属性主要是为了<strong>保证可视性但不保证互斥</strong>，因为一般情况下，线程对域的修改即使是不中断的原子操作，对其他任务也可能是不可见的，因为此时的修改可能只是暂时性的存储在线程的本地处理器的缓存中（不强制必须刷到主存中），不同任务对应用有不同的视图，volatile 保证了如果一个域一旦发生了写操作，就强制将修改立即写入主存中，这样就保证了修改的可视性。<br>当一个域的值依赖于它之前的值或者一个域的值依赖其他域的值，那么volatile就无法正常工作了，使用volatile而不是使用synchronized唯一安全的情况是类中只有一个可变的域。第一选择是使用synchronized而不是有风险的volatile。同一个变量线程之间的可见性和线程中相互操作的互斥性是两件事情。操作互斥是提供了操作整体的原子性，千万不能混淆。</p>
-<h2 id="3-Atomic">3.Atomic</h2><p>在concurrent包中，实现了多个特殊的元自行变量类型，对这些类型使用原子性操作不需要使用synchronized等同步机制而可以保证正确性。Atomic类型性能比使用同步更好，JDK是通过JNI的方式使用了硬件支持的CAS指令，一般的我们更倾向于使用synchronized或者Lock等方式，而避免可能的安全性问题，除非有特别的性能要求。</p>
-<h2 id="4-临界区">4.临界区</h2><p>有时候，你并不需要对整个方法进行同步，而只需要对方法中的部分临界资源进行同步，通过这种方式分离出来的代码段被称为临界区，它也可以使用synchronized建立，此时需要在synchronized中指定一个对象，表示此对象的锁被用来对括号内的代码进行同步控制，这段代码就称为临界区，也即同步控制块，在进入这段代码前必须获取同步对象的锁，否则只能等待，通过使用同步控制块而不是使用整个方法的同步控制。可以使多个任务访问对象的时间性能得到显著提高。<br>synchronized块一般的用法是在当前对象上加锁，即synchronized(this)，此时其他任务就不能对该对象的所有其他synchronized进行调用了。但是如果当前对象的不同的synchronized 块加锁的对象是不一样的，则加锁对象不一样的同步控制块彼此不是互斥的，也即一个任务在访问该对象的synchronized(Object1)同步控制块时，另一个任务也可以同时访问该对象的另一个同步控制块synchronized(Obeject2).<br>如果需要对一个非线程安全的类进行线程安全的操作，我们可以创建一个该类的Manager类，通过在该Manager类中的同步方法访问该类从而实现非线程安全的类的线程安全的访问。 </p>
-<h2 id="5-线程本地存储">5.线程本地存储</h2><p>为了对每个线程都创建变量的本地存储，可以使用concurrent.ThreadLocal类，这样每个线程都会创建自己线程的本地存储变量，线程之间不共享该变量，也就不需要同步控制了。例如：TreadLocal<integer> 。</integer></p>
+        <p>在大型网站中是离不开消息中间件的，而JMS即Java消息服务是JCP提出的一种消息规范，ActiveMQ全面支持JMS1.1。</p>
+<h2 id="部署">部署</h2><p>从Apache可以下载到最新的<a href="http://activemq.apache.org/download.html" title="Apache ActiveMQ" target="_blank" rel="external">Apache ActiveMQ</a> ，然后解压即可，以Windows为例，只需要在安装目录运行如下命令即可。</p>
+<pre><code><span class="tag">ActiveMQ</span>\<span class="tag">apache-activemq-5</span><span class="class">.11</span><span class="class">.1</span>\<span class="tag">bin</span>\<span class="tag">win64</span>&gt;<span class="tag">activemq</span><span class="class">.bat</span>
+</code></pre><p>默认的监听端口地址是61616并且还提供了一个web管理界面</p>
+<p><a href="http://127.0.0.1:8161/admin/" target="_blank" rel="external">http://127.0.0.1:8161/admin/</a>用户名和密码是admin/admin<br>至此基本的部署就完成了。更详细的内容参考官方的<a href="http://activemq.apache.org/getting-started.html" target="_blank" rel="external">Getting Started</a>。</p>
+<h2 id="消息机制">消息机制</h2><p>首先简单介绍下JMS，所谓JMS就是一个Java消息中间件，目前最新的JMS2.0规范是<a href="https://en.wikipedia.org/w/index.php?title=Java_Community_Process&amp;redirect=no" title="Java Community Process" target="_blank" rel="external">JCP</a>组织2013在JSR343中提出的，而当前ActiveMQ完全支持JCP在2002年提出的JSM1.1，虽然JSM1.1已经很久远了，但是仍然很重要。JMS的介绍可以参考维基百科<a href="https://en.wikipedia.org/wiki/Java_Message_Service" title="Java Message Serevice" target="_blank" rel="external">Java Message Service</a>，也可以深入阅读对应的JSR标准:<a href="https://www.jcp.org/en/jsr/detail?id=914" target="_blank" rel="external">JMS1.1(JSR914)</a>,<a href="https://www.jcp.org/en/jsr/detail?id=343" target="_blank" rel="external">JMS2.0(JSR343)</a></p>
+<p>但是简单来说JMS支持两种模式的消息机制：点对点模式（Point-to-point）和发布订阅模式（<a href="https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern" target="_blank" rel="external">Publish and subscribe</a>）。<br>点对点模式是JMS QUEUE模型，而发布订阅模式是JMS TOPIC模型。</p>
+<h3 id="点对点模式">点对点模式</h3><p>发布者将消息发布到对应的Broker（即消息中间件）而存储下来，直到有消费者来获取消息。消息在未被消费之前一直存储而不丢失，但是消息只能被获取一次，例如如果一个发布者发布了消息 M1 M2 M3 M4 而对应的两个消费者来获取消息，则如果消费者1获取了M1和M2那消费者2只能获取M3和M4了，反之亦然。</p>
+<h3 id="发布订阅模式">发布订阅模式</h3><p>发布订阅模式的发布者发布的消息也会先发布到Broker，而与点对点不同的是，它发送的消息不会持久下来，也即，如果当前没有对应的消费者在监听消息，消息就丢失了。因此，只有消费者事先已经在监听消息的时候才能收到消息，同时另一个与点对点不同的是，所有订阅了（即正在监听对应Topic）消息的消费者都能收到每个消息的一份拷贝。例如如果一个发布者发布了消息 M1 M2 M3 M4 而对应的两个消费者在监听，这两个消费者都会完整的获取到 M1 M2 M3 M4 这四个消息，而之后再过来监听的消费者就不会获取到这些消息，只能获取到之后发送的消息。</p>
+<h2 id="示例">示例</h2><p>ActiveMQ 也同样支持点对应和发布订阅模式，并完全实现了JSM1.1的要求。<br>要编写ActiveMQ对应的发布者必须要做如下工作：</p>
+<p>1.创建消息发送对象，这里必须按照JMS的规范创建对应的ConnectionFactory、Conncection、<br>Session、Destination以及MessageProducer。</p>
+<pre><code>public Publisher<span class="params">()</span> throws JMSException {
+    factory = new ActiveMQConnectionFactory<span class="params">(<span class="string">"tcp://localhost:61616"</span>)</span>;
+    connection = factory.createConnection<span class="params">()</span>;
+    connection.start<span class="params">()</span>;
+    session = connection.createSession<span class="params">(<span class="literal">false</span>, Session.AUTO_ACKNOWLEDGE)</span>;
+    destination = session.createQueue<span class="params">(<span class="string">"FirstQueue"</span>)</span>;
+    producer = session.createProducer<span class="params">(destination)</span>;
+}
+</code></pre><p>2.然后按照业务逻辑发送消息，这里示例为了说明逻辑比较简单，发送的消息就是一个简单的字符串。</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">void</span> sendMessage(<span class="keyword">String</span> job) <span class="keyword">throws</span> JMSException {
+        TextMessage message = session.createTextMessage(job);
+        System.out.<span class="built_in">println</span>(<span class="string">"Dest:"</span>+ destination + <span class="string">"Msg:"</span> + message);
+        producer.send(message);
+}
+</code></pre><p>3.在使用完资源后进行资源回收和关闭，这也是所有程序在实现的时候都应该做的事情。</p>
+<pre><code><span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> JMSException </span>{
+    connection.close();
+    session.close();
+    producer.close();
+}
+</code></pre><p>同样的如果编写对应的消费者也和发布者类似的逻辑，代码片段如下：</p>
+<p>1.创建消费者对象，这里必须按照JMS的规范创建对应的ConnectionFactory、Conncection、<br>Session、Destination以及MessageConsumer。</p>
+<pre><code>public Subscriber<span class="params">()</span> throws JMSException {
+    factory = new ActiveMQConnectionFactory<span class="params">(<span class="string">"tcp://localhost:61616"</span>)</span>;
+    connection = factory.createConnection<span class="params">()</span>;
+    connection.start<span class="params">()</span>;
+    session = connection.createSession<span class="params">(<span class="literal">false</span>, Session.AUTO_ACKNOWLEDGE)</span>;
+    destination = session.createQueue<span class="params">(<span class="string">"FirstQueue"</span>)</span>;
+    consumer = session.createConsumer<span class="params">(destination)</span>;
+}
+</code></pre><p>2.然后编写接收消息的逻辑，这里是使用同步阻塞的consumer.receive()一直监听消息。</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">void</span> recieve() <span class="keyword">throws</span> JMSException {
+    <span class="keyword">while</span>(<span class="keyword">true</span>){
+        TextMessage  message = (TextMessage)consumer.receive();
+        <span class="keyword">if</span>(message != <span class="keyword">null</span>){
+            System.out.<span class="keyword">println</span>(message.<span class="keyword">getText</span>());
+        }
+    }
+}
+</code></pre><p>3.关闭资源</p>
+<pre><code><span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> JMSException </span>{
+    connection.close();
+    session.close();
+    consumer.close();
+}
+</code></pre><p>如上是创建基于点对点的模式的消息机制：</p>
+<pre><code><span class="setting">destination = <span class="value">session.createQueue(<span class="string">"FirstQueue"</span>);</span></span>
+</code></pre><p>接收者在创建Destination的时候名字必须是发布者创建的名字，这里是FirstQueue才能正确接收到消息。如果要创建发布订阅模式的消息机制，最简单的方式是：</p>
+<pre><code><span class="setting">destination = <span class="value">session.createTopic(<span class="string">"FirstTopic"</span>);</span></span>
+</code></pre><p>这样就是创建了一个发布订阅模式的消息机制。</p>
+<p>另外：上面的例子中接收者使用的是同步阻塞的处理机制，也就是只有有消息的时候才能处理消息，否则一直阻塞，这样的好处是逻辑简单，但是也因此导致消费者不能在等待消息的时候处理其他任务（比如消息的加工）。其实还可以使用另外的一种非阻塞的方式处理，就是为消费者注册一个MessageListener监听器，负责监听消息，一旦有消息过来就处理消息，而与此同时不影响消费者做其他事情。（显然注册监听器方式和同步recieve()方式不能同时设置）</p>
+<p>首先为消费者注册监听器：</p>
+<pre><code>consumer.setMessageListener(<span class="keyword">new</span> <span class="type">MyMsgListener</span><span class="literal">()</span>);
+</code></pre><p>然后编写监听器的逻辑，监听器必须实现MessageListener，示例如下：</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">MyMsgListener</span> <span class="keyword">implements</span> <span class="title">MessageListener</span></span>{
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onMessage</span><span class="params">(Message message)</span> </span>{
+        TextMessage  msg = (TextMessage)message;
+        <span class="keyword">if</span>(message != <span class="keyword">null</span>){
+            <span class="keyword">try</span> {
+                System.out.println(msg.getText());
+            } <span class="keyword">catch</span> (JMSException e) {
+            }
+        }
+    }
+
+}
+</code></pre><p>完整的代码在：<a href="https://github.com/yidi/Learn/tree/master/mq/activeMQ" target="_blank" rel="external">https://github.com/yidi/Learn/tree/master/mq/activeMQ</a></p>
+<p>分别是一个使用监听器的非阻塞方式的发布订阅模式和一个阻塞方式的点对点示例。</p>
 
       
     </div>
@@ -216,7 +289,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Java并发编程/"> #Java并发编程 </a>
+            <a href="/tags/MQ/"> #MQ </a>
           
         </div>
       
@@ -225,13 +298,11 @@
         <div class="post-nav">
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2015/07/07/深入理解内部类（二）/">深入理解内部类（二）</a>
-            
           </div>
 
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2015/07/05/Java并发编程（一）-并发编程简介/">Java并发编程(一)-并发编程简介</a>
+              <a href="/2015/07/19/Java并发编程（六）-任务调度框架/">Java并发编程(六)-任务执行框架</a>
             
           </div>
         </div>
@@ -251,8 +322,8 @@
     
       <div class="comments" id="comments">
         
-          <div class="ds-thread" data-thread-key="2015/07/07/Java并发编程（二）-共享资源/"
-               data-title="Java并发编程（二）-共享资源" data-url="http://yoursite.com/2015/07/07/Java并发编程（二）-共享资源/">
+          <div class="ds-thread" data-thread-key="2015/07/26/ActiveMQ（一）-初窥/"
+               data-title="ActiveMQ（一）-初窥" data-url="http://yoursite.com/2015/07/26/ActiveMQ（一）-初窥/">
           </div>
         
       </div>
@@ -358,7 +429,7 @@
           <div class="post-toc">
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Synchronized_&_Lock"><span class="nav-number">1.</span> <span class="nav-text">1.Synchronized & Lock</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Volatile"><span class="nav-number">2.</span> <span class="nav-text">2.Volatile</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Atomic"><span class="nav-number">3.</span> <span class="nav-text">3.Atomic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-临界区"><span class="nav-number">4.</span> <span class="nav-text">4.临界区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-线程本地存储"><span class="nav-number">5.</span> <span class="nav-text">5.线程本地存储</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#部署"><span class="nav-number">1.</span> <span class="nav-text">部署</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#消息机制"><span class="nav-number">2.</span> <span class="nav-text">消息机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#点对点模式"><span class="nav-number">2.1.</span> <span class="nav-text">点对点模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#发布订阅模式"><span class="nav-number">2.2.</span> <span class="nav-text">发布订阅模式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#示例"><span class="nav-number">3.</span> <span class="nav-text">示例</span></a></li></ol></div>
             
           </div>
           <div class="post-toc-indicator-bottom post-toc-indicator"></div>

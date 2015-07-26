@@ -160,6 +160,162 @@
           
           
             
+              <a class="post-title-link" href="/2015/07/26/ActiveMQ（一）-初窥/">
+                ActiveMQ（一）-初窥
+              </a>
+            
+          
+        </h1>
+      
+
+      <div class="post-meta">
+        <span class="post-time">
+          发表于 2015-07-26
+        </span>
+
+        
+          <span class="post-category">
+            &nbsp; | &nbsp; 分类于
+            
+              <a href="/categories/JEE/">JEE</a>
+
+              
+              
+
+            
+          </span>
+        
+
+        
+          
+            <span class="post-comments-count">
+            &nbsp; | &nbsp;
+            <a href="/2015/07/26/ActiveMQ（一）-初窥/#comments" >
+              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/26/ActiveMQ（一）-初窥/"></span>
+            </a>
+          </span>
+          
+        
+      </div>
+    </div>
+
+    <div class="post-body">
+
+      
+      
+
+      
+        
+          <p>在大型网站中是离不开消息中间件的，而JMS即Java消息服务是JCP提出的一种消息规范，ActiveMQ全面支持JMS1.1。</p>
+<h2 id="部署">部署</h2><p>从Apache可以下载到最新的<a href="http://activemq.apache.org/download.html" title="Apache ActiveMQ" target="_blank" rel="external">Apache ActiveMQ</a> ，然后解压即可，以Windows为例，只需要在安装目录运行如下命令即可。</p>
+<pre><code><span class="tag">ActiveMQ</span>\<span class="tag">apache-activemq-5</span><span class="class">.11</span><span class="class">.1</span>\<span class="tag">bin</span>\<span class="tag">win64</span>&gt;<span class="tag">activemq</span><span class="class">.bat</span>
+</code></pre><p>默认的监听端口地址是61616并且还提供了一个web管理界面</p>
+<p><a href="http://127.0.0.1:8161/admin/" target="_blank" rel="external">http://127.0.0.1:8161/admin/</a>用户名和密码是admin/admin<br>至此基本的部署就完成了。更详细的内容参考官方的<a href="http://activemq.apache.org/getting-started.html" target="_blank" rel="external">Getting Started</a>。</p>
+<h2 id="消息机制">消息机制</h2><p>首先简单介绍下JMS，所谓JMS就是一个Java消息中间件，目前最新的JMS2.0规范是<a href="https://en.wikipedia.org/w/index.php?title=Java_Community_Process&amp;redirect=no" title="Java Community Process" target="_blank" rel="external">JCP</a>组织2013在JSR343中提出的，而当前ActiveMQ完全支持JCP在2002年提出的JSM1.1，虽然JSM1.1已经很久远了，但是仍然很重要。JMS的介绍可以参考维基百科<a href="https://en.wikipedia.org/wiki/Java_Message_Service" title="Java Message Serevice" target="_blank" rel="external">Java Message Service</a>，也可以深入阅读对应的JSR标准:<a href="https://www.jcp.org/en/jsr/detail?id=914" target="_blank" rel="external">JMS1.1(JSR914)</a>,<a href="https://www.jcp.org/en/jsr/detail?id=343" target="_blank" rel="external">JMS2.0(JSR343)</a></p>
+<p>但是简单来说JMS支持两种模式的消息机制：点对点模式（Point-to-point）和发布订阅模式（<a href="https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern" target="_blank" rel="external">Publish and subscribe</a>）。<br>点对点模式是JMS QUEUE模型，而发布订阅模式是JMS TOPIC模型。</p>
+<h3 id="点对点模式">点对点模式</h3><p>发布者将消息发布到对应的Broker（即消息中间件）而存储下来，直到有消费者来获取消息。消息在未被消费之前一直存储而不丢失，但是消息只能被获取一次，例如如果一个发布者发布了消息 M1 M2 M3 M4 而对应的两个消费者来获取消息，则如果消费者1获取了M1和M2那消费者2只能获取M3和M4了，反之亦然。</p>
+<h3 id="发布订阅模式">发布订阅模式</h3><p>发布订阅模式的发布者发布的消息也会先发布到Broker，而与点对点不同的是，它发送的消息不会持久下来，也即，如果当前没有对应的消费者在监听消息，消息就丢失了。因此，只有消费者事先已经在监听消息的时候才能收到消息，同时另一个与点对点不同的是，所有订阅了（即正在监听对应Topic）消息的消费者都能收到每个消息的一份拷贝。例如如果一个发布者发布了消息 M1 M2 M3 M4 而对应的两个消费者在监听，这两个消费者都会完整的获取到 M1 M2 M3 M4 这四个消息，而之后再过来监听的消费者就不会获取到这些消息，只能获取到之后发送的消息。</p>
+<h2 id="示例">示例</h2><p>ActiveMQ 也同样支持点对应和发布订阅模式，并完全实现了JSM1.1的要求。<br>要编写ActiveMQ对应的发布者必须要做如下工作：</p>
+<p>1.创建消息发送对象，这里必须按照JMS的规范创建对应的ConnectionFactory、Conncection、<br>Session、Destination以及MessageProducer。</p>
+<pre><code>public Publisher<span class="params">()</span> throws JMSException {
+    factory = new ActiveMQConnectionFactory<span class="params">(<span class="string">"tcp://localhost:61616"</span>)</span>;
+    connection = factory.createConnection<span class="params">()</span>;
+    connection.start<span class="params">()</span>;
+    session = connection.createSession<span class="params">(<span class="literal">false</span>, Session.AUTO_ACKNOWLEDGE)</span>;
+    destination = session.createQueue<span class="params">(<span class="string">"FirstQueue"</span>)</span>;
+    producer = session.createProducer<span class="params">(destination)</span>;
+}
+</code></pre><p>2.然后按照业务逻辑发送消息，这里示例为了说明逻辑比较简单，发送的消息就是一个简单的字符串。</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">void</span> sendMessage(<span class="keyword">String</span> job) <span class="keyword">throws</span> JMSException {
+        TextMessage message = session.createTextMessage(job);
+        System.out.<span class="built_in">println</span>(<span class="string">"Dest:"</span>+ destination + <span class="string">"Msg:"</span> + message);
+        producer.send(message);
+}
+</code></pre><p>3.在使用完资源后进行资源回收和关闭，这也是所有程序在实现的时候都应该做的事情。</p>
+<pre><code><span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> JMSException </span>{
+    connection.close();
+    session.close();
+    producer.close();
+}
+</code></pre><p>同样的如果编写对应的消费者也和发布者类似的逻辑，代码片段如下：</p>
+<p>1.创建消费者对象，这里必须按照JMS的规范创建对应的ConnectionFactory、Conncection、<br>Session、Destination以及MessageConsumer。</p>
+<pre><code>public Subscriber<span class="params">()</span> throws JMSException {
+    factory = new ActiveMQConnectionFactory<span class="params">(<span class="string">"tcp://localhost:61616"</span>)</span>;
+    connection = factory.createConnection<span class="params">()</span>;
+    connection.start<span class="params">()</span>;
+    session = connection.createSession<span class="params">(<span class="literal">false</span>, Session.AUTO_ACKNOWLEDGE)</span>;
+    destination = session.createQueue<span class="params">(<span class="string">"FirstQueue"</span>)</span>;
+    consumer = session.createConsumer<span class="params">(destination)</span>;
+}
+</code></pre><p>2.然后编写接收消息的逻辑，这里是使用同步阻塞的consumer.receive()一直监听消息。</p>
+<pre><code><span class="keyword">public</span> <span class="keyword">void</span> recieve() <span class="keyword">throws</span> JMSException {
+    <span class="keyword">while</span>(<span class="keyword">true</span>){
+        TextMessage  message = (TextMessage)consumer.receive();
+        <span class="keyword">if</span>(message != <span class="keyword">null</span>){
+            System.out.<span class="keyword">println</span>(message.<span class="keyword">getText</span>());
+        }
+    }
+}
+</code></pre><p>3.关闭资源</p>
+<pre><code><span class="keyword">public</span> <span class="function"><span class="keyword">void</span> <span class="title">close</span><span class="params">()</span> <span class="keyword">throws</span> JMSException </span>{
+    connection.close();
+    session.close();
+    consumer.close();
+}
+</code></pre><p>如上是创建基于点对点的模式的消息机制：</p>
+<pre><code><span class="setting">destination = <span class="value">session.createQueue(<span class="string">"FirstQueue"</span>);</span></span>
+</code></pre><p>接收者在创建Destination的时候名字必须是发布者创建的名字，这里是FirstQueue才能正确接收到消息。如果要创建发布订阅模式的消息机制，最简单的方式是：</p>
+<pre><code><span class="setting">destination = <span class="value">session.createTopic(<span class="string">"FirstTopic"</span>);</span></span>
+</code></pre><p>这样就是创建了一个发布订阅模式的消息机制。</p>
+<p>另外：上面的例子中接收者使用的是同步阻塞的处理机制，也就是只有有消息的时候才能处理消息，否则一直阻塞，这样的好处是逻辑简单，但是也因此导致消费者不能在等待消息的时候处理其他任务（比如消息的加工）。其实还可以使用另外的一种非阻塞的方式处理，就是为消费者注册一个MessageListener监听器，负责监听消息，一旦有消息过来就处理消息，而与此同时不影响消费者做其他事情。（显然注册监听器方式和同步recieve()方式不能同时设置）</p>
+<p>首先为消费者注册监听器：</p>
+<pre><code>consumer.setMessageListener(<span class="keyword">new</span> <span class="type">MyMsgListener</span><span class="literal">()</span>);
+</code></pre><p>然后编写监听器的逻辑，监听器必须实现MessageListener，示例如下：</p>
+<pre><code><span class="class"><span class="keyword">class</span> <span class="title">MyMsgListener</span> <span class="keyword">implements</span> <span class="title">MessageListener</span></span>{
+    <span class="annotation">@Override</span>
+    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onMessage</span><span class="params">(Message message)</span> </span>{
+        TextMessage  msg = (TextMessage)message;
+        <span class="keyword">if</span>(message != <span class="keyword">null</span>){
+            <span class="keyword">try</span> {
+                System.out.println(msg.getText());
+            } <span class="keyword">catch</span> (JMSException e) {
+            }
+        }
+    }
+
+}
+</code></pre><p>完整的代码在：<a href="https://github.com/yidi/Learn/tree/master/mq/activeMQ" target="_blank" rel="external">https://github.com/yidi/Learn/tree/master/mq/activeMQ</a></p>
+<p>分别是一个使用监听器的非阻塞方式的发布订阅模式和一个阻塞方式的点对点示例。</p>
+
+        
+      
+    </div>
+
+    <div class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </div>
+  </div>
+
+
+    
+      
+
+  <div class="post post-type-normal ">
+    <div class="post-header">
+
+      
+      
+        <h1 class="post-title">
+          
+          
+            
               <a class="post-title-link" href="/2015/07/19/Java并发编程（六）-任务调度框架/">
                 Java并发编程(六)-任务执行框架
               </a>
@@ -1783,155 +1939,6 @@ t<span class="built_in">.</span>start();
 
 
     
-      
-
-  <div class="post post-type-normal ">
-    <div class="post-header">
-
-      
-      
-        <h1 class="post-title">
-          
-          
-            
-              <a class="post-title-link" href="/2015/07/05/深入理解内部类（一）/">
-                深入理解内部类(一)
-              </a>
-            
-          
-        </h1>
-      
-
-      <div class="post-meta">
-        <span class="post-time">
-          发表于 2015-07-05
-        </span>
-
-        
-          <span class="post-category">
-            &nbsp; | &nbsp; 分类于
-            
-              <a href="/categories/CoreJava/">CoreJava</a>
-
-              
-              
-
-            
-          </span>
-        
-
-        
-          
-            <span class="post-comments-count">
-            &nbsp; | &nbsp;
-            <a href="/2015/07/05/深入理解内部类（一）/#comments" >
-              <span class="post-comments-count ds-thread-count" data-thread-key="2015/07/05/深入理解内部类（一）/"></span>
-            </a>
-          </span>
-          
-        
-      </div>
-    </div>
-
-    <div class="post-body">
-
-      
-      
-
-      
-        
-          <h2 id="内部类">内部类</h2><p>把一个类的定义放在另一个类的定义的内部，这种类就是内部类。通过内部类可以把逻辑相关的类组织在一起，通过这种代码隐藏方式，可以有效控制内部类的可见性，不仅如此，内部类了解外围类，并能与之通信。需要知道内部类与类组合是不同的概念。</p>
-<p>在外围类的非静态方法里使用内部类的时候，与使用普通类并没有什么不同。一般的比较典型的情况是在外部类中会有一个方法，该方法会返回一个指向内部类的引用。</p>
-<p>如果要在外部类的非静态方法之外的位置创建某个内部类对象，就必须要像在main()方法中那样，具体的指明这个对象类型：<strong>OuterClassName.InnerClassName。</strong></p>
-<h2 id="链接到外部类">链接到外部类</h2><p>内部类不仅仅是一种名字隐藏和组织代码的模式，这不是内部类最引人注目的用途。当生成一个内部类对象时，这个内部类对象就与制造它的外围对象之间有了一种联系，它能访问其外围对象的所有成员，而不需要任何特殊条件。另外：内部类还拥有其外围类的所有元素的访问权。我们通过Java编程思想一书中的一个例子说明这个特性。首先定义一个接口Selector：</p>
-<pre><code><span class="class"><span class="keyword">interface</span> <span class="title">Selector</span></span>{
-    <span class="function"><span class="keyword">boolean</span> <span class="title">end</span><span class="params">()</span></span>;
-    <span class="function">Object <span class="title">current</span><span class="params">()</span></span>;
-    <span class="function"><span class="keyword">void</span> <span class="title">next</span><span class="params">()</span></span>;
-}
-</code></pre><p>这个接口有end()、current()、next()三个方法。然后定义类Sequence，并定义其内部类SequenceSelector，让这个内部类实现Selector接口。</p>
-<pre><code><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Sequence</span> </span>{
-    <span class="keyword">private</span> Object[] items;
-    <span class="keyword">private</span> <span class="keyword">int</span> next = <span class="number">0</span>;
-    <span class="function"><span class="keyword">public</span> <span class="title">Sequence</span><span class="params">(<span class="keyword">int</span> size)</span></span>{
-        items = <span class="keyword">new</span> Object[size];
-    }
-    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">add</span><span class="params">(Object obj)</span></span>{
-        <span class="keyword">if</span>(next &lt; items.length){
-            items[next++] = obj;
-        }
-    }
-
-    <span class="function"><span class="keyword">public</span> Selector <span class="title">selector</span><span class="params">()</span></span>{
-        <span class="keyword">return</span> <span class="keyword">new</span> SequenceSelector();
-    }
-
-    <span class="keyword">private</span> <span class="class"><span class="keyword">class</span> <span class="title">SequenceSelector</span> <span class="keyword">implements</span> <span class="title">Selector</span></span>{
-        <span class="keyword">private</span> <span class="keyword">int</span> index = <span class="number">0</span>;
-        <span class="annotation">@Override</span>
-        <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">end</span><span class="params">()</span> </span>{
-            <span class="keyword">return</span> index == items.length;
-        }
-        <span class="annotation">@Override</span>
-        <span class="function"><span class="keyword">public</span> Object <span class="title">current</span><span class="params">()</span> </span>{
-            <span class="keyword">return</span> items[index];
-        }
-        <span class="annotation">@Override</span>
-        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">next</span><span class="params">()</span> </span>{
-            <span class="keyword">if</span>(index &lt; items.length){
-                index++;
-            }
-        }
-    }
-    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>{
-        Sequence seq = <span class="keyword">new</span> Sequence(<span class="number">10</span>);
-        <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>;i &lt; <span class="number">10</span>;i++){
-            seq.add(Integer.toString(i));
-        }
-        Selector selector = seq.selector();
-        <span class="keyword">while</span>(!selector.end()){
-            System.out.print(selector.current()+<span class="string">" "</span>);
-            selector.next();
-        }
-    }
-}
-</code></pre><p>这是“迭代器”设计模式的一个简单应用，SequenceSelector是提供selector功能的内部private类。<br>这里内部类中的end()、current()、next()方法都用到了外部类的items对象，而且还是外部类的private对象。可见内部类可以访问外部类的所有成员，这为我们编写迭代过程代码提供了极大的方便（编写其他基于内部类与外部类通信的程序也一样）。内部类之所以拥有这样的访问权限其实是在内部类对象被外部类对象被创建的时候，内部类对象会自动捕获一个指向外部类对象的一个引用。在内部类中看上去直接可以访问外部类成员，其实就是这个自动捕获的引用在访问外部类成员。而捕获这个引用的过程是不需要程序员去关心的。</p>
-<h2 id="-this与-new">.this与.new</h2><p>如果要在内部类中获取外部类对象的引用，可以使用外部类名字后跟<code>.this</code>.这样产生的引用自动具有正确的类型，这在编译期就可以知晓并受到检查，因此没有任何运行时开销。</p>
-<pre><code><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">OuterClass</span> {
-    <span class="keyword">private</span> <span class="keyword">class</span> <span class="title">InnerClass</span>{
-        <span class="function"><span class="keyword">public</span> OuterClass <span class="title">getOuter</span>(<span class="params"></span>)</span>{
-            <span class="keyword">return</span> OuterClass.<span class="keyword">this</span>;
-        }
-    }
-    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span>(<span class="params">String[] args</span>)</span>{
-        OuterClass <span class="keyword">out</span> = <span class="keyword">new</span> OuterClass();
-        OuterClass.InnerClass inner = <span class="keyword">out</span>.new InnerClass();
-        System.<span class="keyword">out</span>.println(<span class="keyword">out</span> == inner.getOuter());
-    }
-}
-</code></pre><p>可以看到以上代码输出的结果为true；</p>
-<p>拥有外部类对象之前是不可能创建内部类的，这是因为内部类对象会自动暗中连接到创建它的外部类对象上。所以我们在main()方法中要创建内部类时必须使用外部类对象去创建内部类，这就是<code>.new</code>语法，例如如下代码方式：</p>
-<pre><code>OuterClass <span class="keyword">out</span> = <span class="keyword">new</span> OuterClass();
-OuterClass.InnerClass inner = <span class="keyword">out</span>.<span class="keyword">new</span> InnerClass();
-</code></pre>
-        
-      
-    </div>
-
-    <div class="post-footer">
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </div>
-  </div>
-
-
-    
   </div>
 
   
@@ -1970,21 +1977,21 @@ OuterClass.InnerClass inner = <span class="keyword">out</span>.<span class="keyw
         <div class="site-state motion-element">
           <div class="site-state-item site-state-posts">
             <a href="/archives">
-              <span class="site-state-item-count">11</span>
+              <span class="site-state-item-count">12</span>
               <span class="site-state-item-name">日志</span>
             </a>
           </div>
 
           <div class="site-state-item site-state-categories">
             <a href="/categories">
-              <span class="site-state-item-count">2</span>
+              <span class="site-state-item-count">3</span>
               <span class="site-state-item-name">分类</span>
               </a>
           </div>
 
           <div class="site-state-item site-state-tags">
             <a href="/tags">
-              <span class="site-state-item-count">3</span>
+              <span class="site-state-item-count">4</span>
               <span class="site-state-item-name">标签</span>
               </a>
           </div>
